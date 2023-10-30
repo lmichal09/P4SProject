@@ -6,6 +6,7 @@ type Fly struct {
 }
 
 type Predator struct {
+	position, velocity, acceleration OrderedPair
 }
 
 type Country struct {
