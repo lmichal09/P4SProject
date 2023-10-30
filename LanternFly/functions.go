@@ -6,7 +6,7 @@ package main
 // SimulateMigration
 // Growth simulation to show how they invade the map
 // Simulate pattern of lantern flies in Pittsburgh
-func SimulateMigration(x, y OrderedPair, temperature, HabitatSize float64, TreeCondition bool, stage int) {
+func SimulateMigration(lanternFly [][]int) {
 
 }
 
