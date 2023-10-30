@@ -2,11 +2,13 @@ package main
 
 type Fly struct {
 	position, velocity, acceleration OrderedPair
+	PercentConsumed                  float64
 	stage                            int
 }
 
 type Predator struct {
 	position, velocity, acceleration OrderedPair
+	PercentEaten                     float64
 }
 
 type Country struct {
