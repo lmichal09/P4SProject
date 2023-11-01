@@ -10,8 +10,15 @@ import (
 // SimulateMigration
 // Growth simulation to show how they invade the map
 // Simulate pattern of lantern flies in Pittsburgh
-func SimulateMigration(lanternFly [][]int) {
+func SimulateMigration(initialUniverse Universe, numGens int, time float64) []Universe {
+	timePoints := make([]Universe, numGens+1)
+	timePoints[0] = initialUniverse
 
+	//range over num of generations and set the i-th uNIVERSE EQUAL TO UPDATING THE (i-1)th uNIVERSE
+	for i := 1; i <= len(timePoints); i++ {
+		timePoints[i] = UpdateUniverse(timePoints[i-1], time)
+	}
+	return timePoints
 }
 
 // Track the population of lantern flies and predators over time
