@@ -10,13 +10,14 @@ import (
 // SimulateMigration
 // Growth simulation to show how they invade the map
 // Simulate pattern of lantern flies in Pittsburgh
-func SimulateMigration(initialCountry Country, numGens int, time float64) []Country {
+func SimulateMigration(initialHabitat Country, numGens int, time float64) []Country {
 	timePoints := make([]Country, numGens+1)
-	timePoints[0] = initialCountry
+	timePoints[0] = initialHabitat
 
 	//range over num of generations and set the i-th country equal to updating the (i-1)th Country
 	for i := 1; i <= len(timePoints); i++ {
-		timePoints[i] = UpdateCountry(timePoints[i-1], time)
+		timePoints[i] = UpdateHabitat(timePoints[i-1], time)
+		//PopulationSize()
 	}
 	return timePoints
 }
@@ -32,16 +33,97 @@ func PopulationSize(size float64) float64 {
 
 // Simulate Predator-Prey interaction
 // Update population sizes based on the consumption rates and predation rules
+// Track the population of lantern flies and predators over time
+// Monitor population growth and decline based on the predation or other factors
 func PredatorPreyBehavior(size int) int {
 
 	return size
 
 }
 
+/*
+InitializeHabitat()
+CreateGrid() // make grid representing habitat
+GetWeatherData
+LatternflyParameters
+InitializePopulation
+
+InitializePreyPredatorModel()
+PredatorPopulation
+Set Parameter of Prey and Predator (eg: Growth Rate (a), Death Rate(b), Prey caught/ Predator/ unit time)
+
+
+
+UpdatePreyPopulation
+	Slices of timePoints
+timePoints[0] - InitializePreyPredatorModel()
+ComputePreyPopulation()
+
+UpdatePredatorPopulation ()
+Slices of timePoints
+timePoints[0] - InitializePreyPredatorModel()
+ComputePredatorPopulation()
+
+UpdateHabitat()
+UpdateLifeStage() // handle their development
+ComputeMortality()
+ComputeFecundity()
+ComputeAdultMovement()
+ComputeLarvalMovement()
+KillSeniors() // should change the name here :)))
+UpdateGridOccupancy()
+
+UpdateLifeStage()
+	for each fly
+		Accumulate degree-day
+		If thermal threshold met
+			Advance to next stage
+
+ComputeMotality()
+
+ComputeViability()
+	Get eggs laid based on temperature
+	Add eggs to grids
+
+ComputeFecundity() bool {
+	fly.energy (t)
+	If fly.energy == setFecundityEnergy {
+		Return true
+}
+}
+
+ComputeAdultMovement()
+S = CalculateDistance(Adult, Tree)
+ProbabilityOfMoving
+
+
+ComputeLarvalMovement()
+
+
+KillSeniors() {
+	If senior.CompuLifeSpan {
+		Population --
+}
+}
+
+ComputeLifeSpan () Bool {
+	If fly.energy >= setEnergy && fly.time >= setLifeSpan {
+		Return true }
+}
+}
+
+ComputePreyPopulation (current prey population, current predator population, Prey growth rate,  Prey death rate)
+Prey Population += ( growth rate * current prey population  - death rate * current prey population * current predator population)
+
+
+ComputePredatorPopulation (current prey population, current predator population, Predator growth rate, Predator death rate)
+Predator Population += (- death rate*current predator population + growth rate * current prey population * current predator population)
+*/
+
 //Inpute a Country and Time
 //Returns a new Country onject corrpespoding to updating the force of gravity on the objects in a given Country, with a tiem interveral in secs
 
-func UpdateCountry(currentCountry Country, time float64) Country {
+func UpdateHabitat(currentCountry Country, time float64) Country {
 	newCountry := CopyCountry(currentCountry) // Copy for all flies and attributes associated with each fly
 
 	// range over all flies in universe and update accel, vel, and position
@@ -99,8 +181,8 @@ func UpdateAccel(currentCountry Country, f Fly) OrderedPair {
 	//Now compute accel
 
 	//Split acceleration based on force
-	accel.x = force.x / f.mass
-	accel.y = force.y / f.mass
+	accel.x = force.x
+	accel.y = force.y
 
 	return accel
 }
@@ -110,10 +192,10 @@ func UpdateAccel(currentCountry Country, f Fly) OrderedPair {
 func ComputeNetForce(currentCountry Country, f Fly) OrderedPair {
 	var NetForce OrderedPair
 
-	//range over all flies other than b and pass
-	// computing the force of gravity to subroutine and the nadd components to net force
+	//range over all flies other than f and pass
+	// computing the force of gravity to subroutine and then add components to net force
 	for i := range currentCountry.flies {
-		// only compute force if current Fly is not b
+		// only compute force if current Fly is not f
 		if currentCountry.flies[i] != f {
 			force := ComputeForce(f, currentCountry.flies[i])
 			// add componets of force to NetForce
@@ -200,19 +282,19 @@ func MaxDistance(c Country) float64 {
 
 }
 
-// takes a slice u of Country objects as input
-// returns a slice of float64 variables having the same length as u.flies
-func AverageSpeed(u []Fly) []float64 {
+// takes a slice f of Country objects as input
+// returns a slice of float64 variables having the same length as f.flies
+func AverageSpeed(f []Fly) []float64 {
 	//Get length of flies in universe
-	numBodies := len(u)
+	numFlies := len(f)
 
 	//Initalize average speed
 	//Make array to store average speed of each Fly
-	AvgSpeed := make([]float64, numBodies)
+	AvgSpeed := make([]float64, numFlies)
 
 	//Iterate over each Fly
-	for i := 0; i < numBodies; i++ {
-		CombinedSpeed := Speed(u[i].velocity)
+	for i := 0; i < numFlies; i++ {
+		CombinedSpeed := Speed(f[i].velocity)
 
 		// Calculate the average speed for i-th Fly
 		AvgSpeed[i] = CombinedSpeed
