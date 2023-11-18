@@ -1,5 +1,23 @@
 package main
 
+// TODO: need to define the following constants
+/*
+// thermal constants: the number of degree-days required for a development change to occur
+// lower temperature threshold: the lowest temperature in which an insect can develop. Below the lower temperature threshold, the insect does not accumulate degree-days; therefore, it may die or enter diapause.
+const (
+    eggToLarvaThreshold float64 = // ... degree-days
+    larvaToPupaThreshold float64 = // ... degree-days
+    pupaToAdultThreshold float64 = // ... degree-days
+	adultToSenileThreshold float64 = // ... degree-days
+	lowerTempThreshold float64 = // ... degree-days
+)
+*/
+
+type Fly struct {
+	position, velocity, acceleration OrderedPair
+	stage                            int     // 0 = egg, 1 = larva, 2 = pupa, 3 = adult
+	energy                           float64
+	isAlive                          bool
 type Fly struct {
 	position, velocity, acceleration OrderedPair
 	PercentConsumed                  float64

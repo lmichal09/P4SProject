@@ -1,6 +1,9 @@
 //List functions needed from Lantern Fly Simulation
 //Author: Leila Michal, Emma Bouchard, Tiffany Ku, and Thu Pham
 
+//NOTE: ctrl + f "TODO" to find all the things that need to be done
+// viability and fecundity are related to temperature
+
 package main
 
 import (
@@ -31,6 +34,132 @@ func PopulationSize(size float64) float64 {
 	return PopulationSize
 }
 
+<<<<<<< HEAD
+func UpdateHabitat(currHabitat Habitat, time float64) Habitat {
+	newHabitat := CopyHabitat(currentHabitat) // Copy for all flies and attributes associated with each fly
+
+	currHabitat.flies = UpdateLifeStage(currHabitat.flies, time)
+	currHabitat.flies = ComputeMortality(currHabitat.flies)
+	currHabitat.flies = ComputeFecundity(currHabitat.flies)
+	currHabitat.flies = ComputeAdultMovement(currHabitat.flies)
+	currHabitat.flies = ComputeLarvalMovement(currHabitat.flies)
+	currHabitat.flies = RemoveSeniors(currHabitat.flies)
+
+	return newHabitat
+}
+
+// UpdateLifeStage
+func UpdateLifeStage(f []Fly, time float64) []Fly {
+	for i := 0; i < len(flies); i++ {
+		// Accumulate degree-days based on daily temperature
+		degreeDays := ComputeDD(dailyTemp) //TODO: datatype of dailyTemp
+
+		// Below the lower temperature threshold, the insect does not accumulate degree-days
+		if degreeDays < lowerTempThreshold {
+			flies[i].DegreeDays += 0
+		} else {
+			flies[i].DegreeDays += degreeDays
+		}
+
+		// Check and update life stage based on thermal thresholds
+		switch flies[i].Stage {
+		case 0: // Egg
+			if flies[i].DegreeDays >= EggToLarvaThreshold {
+				flies[i].Stage = 1      // Change to larva
+				flies[i].DegreeDays = 0 // Reset degree days
+			}
+		case 1: // Larva
+			if flies[i].DegreeDays >= LarvaToPupaThreshold {
+				flies[i].Stage = 2      // Change to pupa
+				flies[i].DegreeDays = 0 // Reset degree days
+			}
+		case 2: // Pupa
+			if flies[i].DegreeDays >= PupaToAdultThreshold {
+				flies[i].Stage = 3      // Change to adult
+				flies[i].DegreeDays = 0 // Reset degree days
+			}
+			// No case for adults as they do not transform further
+		}
+	}
+	return flies
+}
+
+// The energy (DD) accumulated during 1 day is calculated by subtracting the value of the lower temperature threshold from the value of the daily temperature
+func ComputeDD(dailyTemperature float64) float64 {
+	return dailyTemperature - lowerTempThreshold
+}
+
+// ComputeMortality updates the mortality status of flies.
+func ComputeMortality(flies []Fly) []Fly {
+    for i := range flies {
+        if flies[i].Stage == 3 { // Check for adults
+            // For adults, mortality is based on energy threshold
+            flies[i].Energy += // TODO: Increment energy based on some logic
+
+            if flies[i].Energy >= AdultEnergyThreshold {  
+                flies[i].IsAlive = false
+            }
+        } else {
+            // For immature insects, mortality can be based on a daily probability
+            mortalityProbability := // TODO: Calculate based on temperature or other factors
+            if someRandomCondition(mortalityProbability) { // TODO: someRandomCondition to simulate probability
+                flies[i].IsAlive = false
+            }
+        }
+    }
+    return flies
+}
+
+// ComputeFecundity 
+// NOTE: females lay one or two egg masses, each containing 30-60 eggs
+// TODO: eggs are laid in the same grid as the adult or the neighboring grid?
+func ComputeFecundity(flies []Fly, temperature float64) []Fly {
+    for i := range flies {
+        if flies[i].Stage == 3 { // only adults can lay eggs
+            // Calculate fecundity based on temperature
+            // φ(T) - Oviposition probability function dependent on temperature
+            flies[i].Fecundity = calculateFecundity(temperature)
+        }
+    }
+    return flies
+}
+
+// TODO: the calculation is not in the paper, need to check (Garcia et al. 2016).
+func CalculateFecundity(temperature float64) float64 {
+    // Implement the calculation for fecundity based on temperature
+    return 0 // Placeholder
+}
+
+// ComputeLarvalMovement updates the position of adult flies 
+// TODO: in the paper we referenced, the movement of an adult inside the simulated area at each time step had no preferential direction and was calculated as described in Garcia et al. but i think we should consider the distribution of trees, or other factors
+func ComputeAdultMovement(flies []Fly) []Fly {
+    for i := range flies {
+        if flies[i].Stage == 3 { // adult
+            // Calculate movement based on a probability function
+			// TODO: MovingProbability() ???
+            distance := CalculateMovementDistance()
+            flies[i].Position = UpdatePosition(flies[i].Position, distance)
+        }
+    }
+    return flies
+}
+
+func CalculateMovementDistance() float64 {
+    // TODO: Implement logic to calculate movement distance
+    return 0 // Placeholder
+}
+
+func UpdatePosition(position OrderedPair, distance float64) OrderedPair {
+    // Update the position based on the calculated distance
+    // This is a simplified placeholder logic
+    return OrderedPair{position.X + distance, position.Y}
+}
+
+
+
+
+=======
+>>>>>>> parent of d911a0a (main)
 // Simulate Predator-Prey interaction
 // Update population sizes based on the consumption rates and predation rules
 // Track the population of lantern flies and predators over time
