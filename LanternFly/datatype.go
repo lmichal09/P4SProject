@@ -15,13 +15,15 @@ const (
 
 type Fly struct {
 	position, velocity, acceleration OrderedPair
-	stage                            int     // 0 = egg, 1 = larva, 2 = pupa, 3 = adult
-	energy                           float64
+	stage                            int     // 0 = egg, 1 = instar1, 2 = instar2, 3 = instar3, 4 = instar4, 5 = adult
+	energy                           float64 // Degree-days
 	isAlive                          bool
-type Fly struct {
-	position, velocity, acceleration OrderedPair
-	PercentConsumed                  float64
-	stage                            int
+	locationID                       int
+}
+
+type stage struct {
+	a, b       float64
+	Tmin, Tmax float64
 }
 
 type Predator struct {
