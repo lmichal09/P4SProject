@@ -1,6 +1,9 @@
 //List functions needed from Lantern Fly Simulation
 //Author: Leila Michal, Emma Bouchard, Tiffany Ku, and Thu Pham
 
+//NOTE: ctrl + f "TODO" to find all the things that need to be done
+// viability and fecundity are related to temperature
+
 package main
 
 import (
@@ -33,6 +36,184 @@ func PopulationSize(size float64) float64 {
 	return PopulationSize
 }
 
+func UpdateHabitat(currHabitat Habitat, time float64) Habitat {
+	newHabitat := CopyHabitat(currentHabitat) // Copy for all flies and attributes associated with each fly
+
+	currHabitat.flies = UpdateLifeStage(currHabitat.flies, time)
+	currHabitat.flies = ComputeMortality(currHabitat.flies)
+	currHabitat.flies = ComputeFecundity(currHabitat.flies)
+	currHabitat.flies = ComputeAdultMovement(currHabitat.flies)
+	currHabitat.flies = ComputeLarvalMovement(currHabitat.flies)
+	currHabitat.flies = RemoveSeniors(currHabitat.flies)
+
+	return newHabitat
+}
+
+
+// UpdateLifeStage() updates the life stage of flies based on the cumulative degree-days (CDD)
+func UpdateLifeStage(flies []Fly, cdd float64) []Fly {
+    for i := range flies {
+
+		// TODO: Assuming each fly has a location ID or some identifier to link it to weather data?
+		locationID := flies[i].locationID
+		tempData := GetWeatherData[locationID]
+
+		// compute degree dat for this fly
+		dd := ComputeDegreeDay(tempData.maxTemp, tempData.minTemp, baseTemp, upperTemp)
+
+		// update cumulative degree-days for this fly
+		flies[i].energy += dd
+
+		// update life stage based on cumulative degree-days
+        switch {
+        case cdd < 270:
+            // Egg stage
+            flies[i].stage = 0
+
+        case cdd >= 270 && cdd < 465:
+            // First instar stage
+            flies[i].stage = 1
+
+        case cdd >= 465 && cdd < 645:
+            // Second instar stage
+            flies[i].stage = 2
+
+        case cdd >= 645 && cdd < 825:
+            // Third instar stage
+            flies[i].stage = 3
+
+        case cdd >= 825 && cdd < 1112:
+            // Fourth instar stage
+            flies[i].stage = 4
+
+        case cdd >= 1112 && cdd < 1825:
+            // Adult stage
+            flies[i].stage = 5
+
+        case cdd >= 1825:
+            // After reaching the egg laying stage, the stage remains adult
+            flies[i].stage = 5
+        }
+    }
+
+    return flies
+}
+
+
+// ComputeDegreeDay calculates the degree days for a single day.
+// maxTemp and minTemp are the day's maximum and minimum temperatures.
+// baseTemp is the base (threshold) temperature for development.
+// upperTemp is an optional upper threshold temperature; use a negative value if not needed.
+func ComputeDegreeDay(maxTemp, minTemp, baseTemp, upperTemp float64) float64 {
+    // Calculate the mean temperature for the day
+    meanTemp := (maxTemp + minTemp) / 2
+
+    // If mean temperature is below the base temperature, return 0
+    if meanTemp < baseTemp {
+        return 0
+    }
+
+    // If an upper threshold is specified and the mean temperature is above it, cap the mean temperature
+    if upperTemp >= 0 && meanTemp > upperTemp {
+        meanTemp = upperTemp
+    }
+
+    // Calculate and return the degree days
+    return meanTemp - baseTemp
+}
+
+
+// ComputeMortality updates the mortality status of flies.
+func ComputeMortality(flies []Fly) []Fly {
+    for i := range flies {
+        if flies[i].Stage == 3 { // Check for adults
+            // For adults, mortality is based on energy threshold
+            flies[i].Energy += // TODO: Increment energy based on some logic
+
+            if flies[i].Energy >= AdultEnergyThreshold {  
+                flies[i].IsAlive = false
+            }
+        } else {
+            // For immature insects, mortality can be based on a daily probability
+            mortalityProbability := // TODO: Calculate based on temperature or other factors
+            if someRandomCondition(mortalityProbability) { // TODO: someRandomCondition to simulate probability
+                flies[i].IsAlive = false
+            }
+        }
+    }
+    return flies
+}
+
+// ComputeFecundity 
+// NOTE: females lay one or two egg masses, each containing 30-60 eggs
+// TODO: eggs are laid in the same grid as the adult or the neighboring grid?
+func ComputeFecundity(flies []Fly, temperature float64) []Fly {
+    for i := range flies {
+        if flies[i].Stage == 3 { // only adults can lay eggs
+            // Calculate fecundity based on temperature
+            // φ(T) - Oviposition probability function dependent on temperature
+            flies[i].Fecundity = calculateFecundity(temperature)
+        }
+    }
+    return flies
+}
+
+// TODO: the calculation is not in the paper, need to check (Garcia et al. 2016).
+func CalculateFecundity(temperature float64) float64 {
+    // Implement the calculation for fecundity based on temperature
+    return 0 // Placeholder
+}
+
+// ComputeLarvalMovement updates the position of adult flies 
+// TODO: in the paper we referenced, the movement of an adult inside the simulated area at each time step had no preferential direction and was calculated as described in Garcia et al. but i think we should consider the distribution of trees, or other factors
+func ComputeAdultMovement(flies []Fly) []Fly {
+    for i := range flies {
+        if flies[i].Stage == 3 { // adult
+            // Calculate movement based on a probability function
+			// TODO: MovingProbability() ???
+            distance := CalculateMovementDistance()
+            flies[i].Position = UpdatePosition(flies[i].Position, distance)
+        }
+    }
+    return flies
+}
+
+func CalculateMovementDistance() float64 {
+    // TODO: Implement logic to calculate movement distance
+    return 0 // Placeholder
+}
+
+func UpdatePosition(position OrderedPair, distance float64) OrderedPair {
+    // Update the position based on the calculated distance
+    // This is a simplified placeholder logic
+    return OrderedPair{position.X + distance, position.Y}
+}
+
+// Each larva had a probability l of moving to an adjacent plant per day, using a Moore neighborhood of radius 1
+func ComputeLarvalMovement(flies []Fly, moveProbability float64) []Fly {
+	for i := range flies {
+		if flies[i].Stage == /* larval stage identifier */ {
+			if ShouldMove(moveProbability) {
+				flies[i].Position = GetNewPosition(flies[i].Position)
+			}
+		}
+	}
+	return flies
+}
+
+func ShouldMove(moveProb float64) bool {
+	return rand.Float64() < moveProb
+}
+
+func GetNewPosition(currentPosition OrderedPair) OrderedPair {
+	// Moore neighborhood moves: stay, or move to one of the 8 surrounding cells
+	dx := rand.Intn(3) - 1 // -1, 0, or 1
+	dy := rand.Intn(3) - 1 // -1, 0, or 1
+	return OrderedPair{X: currentPosition.X + dx, Y: currentPosition.Y + dy}
+}
+
+
+
 // Simulate Predator-Prey interaction
 // Update population sizes based on the consumption rates and predation rules
 // Track the population of lantern flies and predators over time
@@ -44,76 +225,6 @@ func PredatorPreyBehavior(size int) int {
 }
 
 /*
-InitializeHabitat()
-CreateGrid() // make grid representing habitat
-GetWeatherData
-LatternflyParameters
-InitializePopulation
-
-InitializePreyPredatorModel()
-PredatorPopulation
-Set Parameter of Prey and Predator (eg: Growth Rate (a), Death Rate(b), Prey caught/ Predator/ unit time)
-
-
-
-UpdatePreyPopulation
-	Slices of timePoints
-timePoints[0] - InitializePreyPredatorModel()
-ComputePreyPopulation()
-
-UpdatePredatorPopulation ()
-Slices of timePoints
-timePoints[0] - InitializePreyPredatorModel()
-ComputePredatorPopulation()
-
-UpdateHabitat()
-UpdateLifeStage() // handle their development
-ComputeMortality()
-ComputeFecundity()
-ComputeAdultMovement()
-ComputeLarvalMovement()
-KillSeniors() // should change the name here :)))
-UpdateGridOccupancy()
-
-UpdateLifeStage()
-	for each fly
-		Accumulate degree-day
-		If thermal threshold met
-			Advance to next stage
-
-ComputeMotality()
-
-ComputeViability()
-	Get eggs laid based on temperature
-	Add eggs to grids
-
-ComputeFecundity() bool {
-	fly.energy (t)
-	If fly.energy == setFecundityEnergy {
-		Return true
-}
-}
-
-ComputeAdultMovement()
-S = CalculateDistance(Adult, Tree)
-ProbabilityOfMoving
-
-
-ComputeLarvalMovement()
-
-
-KillSeniors() {
-	If senior.CompuLifeSpan {
-		Population --
-}
-}
-
-ComputeLifeSpan () Bool {
-	If fly.energy >= setEnergy && fly.time >= setLifeSpan {
-		Return true }
-}
-}
-
 ComputePreyPopulation (current prey population, current predator population, Prey growth rate,  Prey death rate)
 Prey Population += ( growth rate * current prey population  - death rate * current prey population * current predator population)
 
@@ -121,22 +232,6 @@ Prey Population += ( growth rate * current prey population  - death rate * curre
 ComputePredatorPopulation (current prey population, current predator population, Predator growth rate, Predator death rate)
 Predator Population += (- death rate*current predator population + growth rate * current prey population * current predator population)
 */
-
-//Inpute a Country and Time
-//Returns a new Country onject corrpespoding to updating the force of gravity on the objects in a given Country, with a tiem interveral in secs
-
-func UpdateHabitat(currentCountry Country, time float64) Country {
-	newCountry := CopyCountry(currentCountry) // Copy for all flies and attributes associated with each fly
-
-	// range over all flies in universe and update accel, vel, and position
-	for i := range newCountry.flies {
-		newCountry.flies[i].acceleration = UpdateAccel(currentCountry, newCountry.flies[i])
-		newCountry.flies[i].velocity = UpdateVelocity(newCountry.flies[i], time)
-		newCountry.flies[i].position = UpdatePosition(newCountry.flies[i], time)
-
-	}
-	return newCountry
-}
 
 // CopyCountry takes a Country and return a copy of all flies in this Country with fields copied over.
 func CopyCountry(currentCountry Country) Country {
