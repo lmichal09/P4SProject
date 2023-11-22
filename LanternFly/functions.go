@@ -7,6 +7,8 @@ import (
 	"math"
 )
 
+const G = 6.67408e-11
+
 // SimulateMigration
 // Growth simulation to show how they invade the map
 // Simulate pattern of lantern flies in Pittsburgh
