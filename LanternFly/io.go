@@ -2,19 +2,36 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"encoding/csv"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
-// ReadSamplesFromDirectory has the following input and output
-// Input: a collection of filenames. Each file has one string on each line
-// Output: a map whose keys are the sample names and whose values are the frequency map at that site.
-func ReadSamplesFromDirectory(directory string) map[string](map[string]int) {
+// SampleData represents the structure of the data in the file
+type SampleData struct {
+	Source           string
+	Year             int
+	BioYear          int
+	Latitude         float64
+	Longitude        float64
+	State            string
+	LydePresent      bool
+	LydeEstablished  bool
+	LydeDensity      string
+	SourceAgency     string
+	CollectionMethod string
+	PointID          string
+	RoundedLongitude float64
+	RoundedLatitude  float64
+}
 
-	allMaps := make(map[string](map[string]int))
+// ReadSamplesFromDirectory reads a collection of files from a given directory
+// and returns a map where the keys are sample names and the values are slices of SampleData.
+func ReadSamplesFromDirectory(directory string) map[string][]SampleData {
+	allData := make(map[string][]SampleData)
 
 	dirContents, err := ioutil.ReadDir(directory)
 	if err != nil {
@@ -22,113 +39,139 @@ func ReadSamplesFromDirectory(directory string) map[string](map[string]int) {
 	}
 
 	for _, fileData := range dirContents {
-		// what is the file name?
+		// Extract sample name from file name
 		fileName := fileData.Name()
-
-		// Remove the file extension (".txt") to obtain the name of the sample
 		sampleName := strings.Replace(fileName, ".txt", "", 1)
 
-		freqMap := ReadFrequencyMapFromFile(filepath.Join(directory, fileName))
-
-		allMaps[sampleName] = freqMap
+		// Read data from file and store in the result map
+		data := ReadSampleDataFromFile(filepath.Join(directory, fileName))
+		allData[sampleName] = data
 	}
 
-	return allMaps
+	return allData
 }
 
-// ReadFrequencyMapFromFile
-// Input: name of file which contains one string on each line
-// Output: the frequency map of strings in the file.
-func ReadFrequencyMapFromFile(filename string) map[string]int {
+// ReadSampleDataFromFile reads data from a file and returns a slice of SampleData.
+func ReadSampleDataFromFile(filename string) []SampleData {
+	var sampleData []SampleData
 
-	//first, create our frequency map
-	freqMap := make(map[string]int)
-
-	// now, try to open the file.
 	file, err := os.Open(filename)
-
-	// was the file open successful?
+	defer file.Close()
 	if err != nil {
 		panic(err)
 	}
 
-	defer file.Close() // the "defer" statement says "do this at the end of the file"
-
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
 
-		currentString := scanner.Text() // current line of the text
-		freqMap[currentString]++        // increment the current line's # of occurrences
-	}
+		// Convert fields to appropriate types
+		year := parseInteger(fields[1])
+		bioYear := parseInteger(fields[2])
+		latitude := parseFloat(fields[3])
+		longitude := parseFloat(fields[4])
+		lydePresent := parseBool(fields[6])
+		lydeEstablished := parseBool(fields[7])
+		roundedLongitude := parseFloat(fields[12])
+		roundedLatitude := parseFloat(fields[13])
 
-	err2 := scanner.Err()
-
-	if err2 != nil {
-		panic(err2)
-	}
-
-	return freqMap
-}
-
-func WriteBetaDiversityMatrixToFile(mtx [][]float64, sampleNames []string, filename string) {
-	file, err := os.Create(filename)
-	if err != nil { // panic if anything went wrong
-		panic(err)
-	}
-
-	writer := bufio.NewWriter(file)
-	// add gap at start of file
-	fmt.Fprint(writer, ",")
-
-	//print all sample names
-	for _, name := range sampleNames {
-		fmt.Fprint(writer, name)
-		fmt.Fprint(writer, ",")
-	}
-	fmt.Fprintln(writer, "")
-
-	for i := range mtx {
-		fmt.Fprint(writer, sampleNames[i])
-		fmt.Fprint(writer, ",")
-		for j := range mtx[i] {
-			fmt.Fprint(writer, mtx[i][j])
-			fmt.Fprint(writer, ",")
+		// Create a SampleData instance and append to the slice
+		data := SampleData{
+			Source:           fields[0],
+			Year:             year,
+			BioYear:          bioYear,
+			Latitude:         latitude,
+			Longitude:        longitude,
+			State:            fields[5],
+			LydePresent:      lydePresent,
+			LydeEstablished:  lydeEstablished,
+			LydeDensity:      fields[8],
+			SourceAgency:     fields[9],
+			CollectionMethod: fields[10],
+			PointID:          fields[11],
+			RoundedLongitude: roundedLongitude,
+			RoundedLatitude:  roundedLatitude,
 		}
-		fmt.Fprintln(writer, "")
+
+		sampleData = append(sampleData, data)
 	}
 
-	writer.Flush()
-
-	file.Close() // the "defer" statement says "do this at the end of the file"
-
-}
-
-func WriteSimpsonsMapToFile(simpson map[string]float64, filename string) {
-	file, err := os.Create(filename)
-	if err != nil { // panic if anything went wrong
+	err = scanner.Err()
+	if err != nil {
 		panic(err)
 	}
 
-	writer := bufio.NewWriter(file)
+	return sampleData
+}
 
-	//print headers
-	fmt.Fprint(writer, "Sample")
-	fmt.Fprint(writer, ",")
-	fmt.Fprint(writer, "SimpsonsIndex")
-	fmt.Fprintln(writer, "")
+// WriteToFile writes the sample data to a CSV file.
+func WriteToFile(filename string, data []SampleData) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-	// print sample name and value on each line
-	for sampleName, val := range simpson {
-		fmt.Fprint(writer, sampleName)
-		fmt.Fprint(writer, ",")
-		fmt.Fprint(writer, val)
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
 
-		//print new line
-		fmt.Fprintln(writer, "")
+	// Writing header
+	header := []string{
+		"Source", "Year", "BioYear", "Latitude", "Longitude",
+		"State", "LydePresent", "LydeEstablished", "LydeDensity",
+		"SourceAgency", "CollectionMethod", "PointID",
+		"RoundedLongitude", "RoundedLatitude",
+	}
+	if err := writer.Write(header); err != nil {
+		return err
 	}
 
-	writer.Flush()
+	// Writing data
+	for _, sample := range data {
+		record := []string{
+			sample.Source, strconv.Itoa(sample.Year), strconv.Itoa(sample.BioYear),
+			strconv.FormatFloat(sample.Latitude, 'f', -1, 64),
+			strconv.FormatFloat(sample.Longitude, 'f', -1, 64),
+			sample.State, strconv.FormatBool(sample.LydePresent),
+			strconv.FormatBool(sample.LydeEstablished), sample.LydeDensity,
+			sample.SourceAgency, sample.CollectionMethod, sample.PointID,
+			strconv.FormatFloat(sample.RoundedLongitude, 'f', -1, 64),
+			strconv.FormatFloat(sample.RoundedLatitude, 'f', -1, 64),
+		}
 
-	file.Close() // the "defer" statement says "do this at the end of the file"
+		if err := writer.Write(record); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Helper function to convert string to integer
+func parseInteger(s string) int {
+	val, err := strconv.Atoi(s)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
+// Helper function to convert string to float64
+func parseFloat(s string) float64 {
+	val, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
+// Helper function to convert string to bool
+func parseBool(s string) bool {
+	val, err := strconv.ParseBool(s)
+	if err != nil {
+		panic(err)
+	}
+	return val
 }
