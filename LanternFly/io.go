@@ -103,32 +103,3 @@ func WriteBetaDiversityMatrixToFile(mtx [][]float64, sampleNames []string, filen
 	file.Close() // the "defer" statement says "do this at the end of the file"
 
 }
-
-func WriteSimpsonsMapToFile(simpson map[string]float64, filename string) {
-	file, err := os.Create(filename)
-	if err != nil { // panic if anything went wrong
-		panic(err)
-	}
-
-	writer := bufio.NewWriter(file)
-
-	//print headers
-	fmt.Fprint(writer, "Sample")
-	fmt.Fprint(writer, ",")
-	fmt.Fprint(writer, "SimpsonsIndex")
-	fmt.Fprintln(writer, "")
-
-	// print sample name and value on each line
-	for sampleName, val := range simpson {
-		fmt.Fprint(writer, sampleName)
-		fmt.Fprint(writer, ",")
-		fmt.Fprint(writer, val)
-
-		//print new line
-		fmt.Fprintln(writer, "")
-	}
-
-	writer.Flush()
-
-	file.Close() // the "defer" statement says "do this at the end of the file"
-}

@@ -5,11 +5,11 @@ import (
 )
 
 func main() {
-	fmt.Println("Metagenomics!")
+	fmt.Println("Lantern Flies simulation!")
 
 	// step 1: reading input from a single file.
 
-	filename := "Data/Fall_Allegheny_1.txt"
+	filename := "Data/lydetext.txt"
 	freqMap := ReadFrequencyMapFromFile(filename)
 	fmt.Println("File read successfully! We have", len(freqMap), "total patterns.")
 
@@ -50,7 +50,7 @@ func main() {
 
 	// It would be better to print to a file.  Hence, we will need to learn writing to a file.
 
-	simpsonFile := "Matrices/SimpsonMatrix.csv"
+	simpsonFile := "Matrices/MigrationMatrix.csv"
 	WriteSimpsonsMapToFile(simpson, simpsonFile)
 
 	outFilename := "Matrices/BetaDiversityMatrix.csv"
