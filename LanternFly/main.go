@@ -2,157 +2,13 @@ package main
 
 import (
 	"fmt"
+	"gifhelper"
+	"math"
+	"math/rand"
 )
 
 func main() {
 	fmt.Println("Lantern Flies simulation!")
-
-	// step 1: reading input from a single file.
-
-	filename := "Data/lydetext.txt"
-	allData := ReadSamplesFromDirectory(filename)
-
-	//step 2: reading input from a directory
-
-	for sampleName, data := range allData {
-		csvFilename := sampleName + ".csv"
-		err := WriteToFile(csvFilename, data)
-		if err != nil {
-			fmt.Printf("Error writing to file %s: %v\n", csvFilename, err)
-		} else {
-			fmt.Printf("Data written to %s\n", csvFilename)
-		}
-	}
-
-	fmt.Println("Success! Now we are ready to do something cool with our data.")
-}
-package main
-
-import (
-	"fmt"
-	"gifhelper"
-	"math"
-	"math/rand"
-	"os"
-	"strconv"
-)
-
-// Define your Boid and Sky types here
-
-func main() {
-	fmt.Println("Sky Boids simulation!")
-
-	// Declaring Sky and setting its fields.
-
-	// now we need to implement the system
-
-	//let's take command line arguments (CLAs) from the user
-	//CLAs get stored in an ARRAY of strings called os.Args
-	//this array has length equal to number of arguments given by the user + 1
-
-	//os.Args[0] is the name of the program (./boids)
-	fmt.Println(os.Args[0])
-
-	//let's take CLAs: numGens, time, output path?, width of canvas
-
-	numBoids, err := strconv.Atoi(os.Args[1])
-	if err != nil {
-		panic(err)
-	}
-
-	if numBoids < 0 {
-		panic("Error: Invalid numBoids argument")
-	}
-
-	skyWidth, err := strconv.ParseFloat(os.Args[2], 64)
-	if err != nil {
-		panic(err)
-	}
-
-	if skyWidth < 0 {
-		panic("Error: Invalid skyWidth argument")
-	}
-
-	initialSpeed, err := strconv.ParseFloat(os.Args[3], 64)
-	if err != nil {
-		panic(err)
-	}
-
-	if initialSpeed < 0 {
-		panic("Error: Invalid initialSpeed argument")
-	}
-
-	maxBoidSpeed, err := strconv.ParseFloat(os.Args[4], 64)
-	if err != nil {
-		panic(err)
-	}
-
-	if maxBoidSpeed < 0 {
-		panic("Error: Invalid maxBoidSpeed argument")
-	}
-
-	numGens, err := strconv.Atoi(os.Args[5])
-	if err != nil {
-		panic(err)
-	}
-
-	if numGens < 0 {
-		panic("Error: Invalid numGens argument")
-	}
-
-	proximity, err := strconv.ParseFloat(os.Args[6], 64)
-	if err != nil {
-		panic(err)
-	}
-
-	if proximity < 0 {
-		panic("Error: Invalid proximity argument")
-	}
-
-	separationFactor, err := strconv.ParseFloat(os.Args[7], 64)
-	if err != nil {
-		panic(err)
-	}
-
-	if separationFactor < 0 {
-		panic("Error: Invalid separationForce argument")
-	}
-
-	alignmentFactor, err := strconv.ParseFloat(os.Args[8], 64)
-	if err != nil {
-		panic(err)
-	}
-
-	if alignmentFactor < 0 {
-		panic("Error: Invalid alignmentFactor argument")
-	}
-
-	cohesionFactor, err := strconv.ParseFloat(os.Args[9], 64)
-	if err != nil {
-		panic(err)
-	}
-
-	if cohesionFactor < 0 {
-		panic("Error: Invalid cohesionFactor argument")
-	}
-
-	timeStep, err := strconv.ParseFloat(os.Args[10], 64)
-	if err != nil {
-		fmt.Println("Error: Invalid timeStep argument")
-		return
-	}
-
-	canvasWidth, err := strconv.Atoi(os.Args[11])
-	if err != nil {
-		fmt.Println("Error: Invalid canvasWidth argument")
-		return
-	}
-
-	imageFrequency, err := strconv.Atoi(os.Args[12])
-	if err != nil {
-		fmt.Println("Error: Invalid imageFrequency argument")
-		return
-	}
 
 	outputFile := "output/output.gif" // Define the output file path and name
 
@@ -193,6 +49,25 @@ func main() {
 	fmt.Println("GIF drawn!")
 
 	fmt.Println("Simulation complete!")
+
+	// step 1: reading input from a single file.
+
+	filename := "Data/lydetext.txt"
+	allData := ReadSamplesFromDirectory(filename)
+
+	//step 2: reading input from a directory
+
+	for sampleName, data := range allData {
+		csvFilename := sampleName + ".csv"
+		err := WriteToFile(csvFilename, data)
+		if err != nil {
+			fmt.Printf("Error writing to file %s: %v\n", csvFilename, err)
+		} else {
+			fmt.Printf("Data written to %s\n", csvFilename)
+		}
+	}
+
+	fmt.Println("Success! Now we are ready to do something cool with our data.")
 }
 
 // Initialize and generate randomly direction
