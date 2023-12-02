@@ -126,18 +126,18 @@ func ComputeDegreeDay(maxTemp, minTemp, baseTemp, upperTemp float64) float64 {
 // ComputeMortality updates the mortality status of flies.
 func ComputeMortality(flies []Fly) []Fly {
     for i := range flies {
-        if flies[i].Stage == 3 { // Check for adults
+        if flies[i].stage == 3 { // Check for adults
             // For adults, mortality is based on energy threshold
             flies[i].Energy += // TODO: Increment energy based on some logic
 
             if flies[i].Energy >= AdultEnergyThreshold {  
-                flies[i].IsAlive = false
+                flies[i].isAlive = false
             }
         } else {
             // For immature insects, mortality can be based on a daily probability
             mortalityProbability := // TODO: Calculate based on temperature or other factors
             if someRandomCondition(mortalityProbability) { // TODO: someRandomCondition to simulate probability
-                flies[i].IsAlive = false
+                flies[i].isAlive = false
             }
         }
     }
@@ -149,7 +149,7 @@ func ComputeMortality(flies []Fly) []Fly {
 // TODO: eggs are laid in the same grid as the adult or the neighboring grid?
 func ComputeFecundity(flies []Fly, temperature float64) []Fly {
     for i := range flies {
-        if flies[i].Stage == 3 { // only adults can lay eggs
+        if flies[i].stage == 3 { // only adults can lay eggs
             // Calculate fecundity based on temperature
             // φ(T) - Oviposition probability function dependent on temperature
             flies[i].Fecundity = calculateFecundity(temperature)
@@ -168,7 +168,7 @@ func CalculateFecundity(temperature float64) float64 {
 // TODO: in the paper we referenced, the movement of an adult inside the simulated area at each time step had no preferential direction and was calculated as described in Garcia et al. but i think we should consider the distribution of trees, or other factors
 func ComputeAdultMovement(flies []Fly) []Fly {
     for i := range flies {
-        if flies[i].Stage == 3 { // adult
+        if flies[i].stage == 3 { // adult
             // Calculate movement based on a probability function
 			// TODO: MovingProbability() ???
             distance := CalculateMovementDistance()
@@ -192,7 +192,7 @@ func UpdatePosition(position OrderedPair, distance float64) OrderedPair {
 // Each larva had a probability l of moving to an adjacent plant per day, using a Moore neighborhood of radius 1
 func ComputeLarvalMovement(flies []Fly, moveProbability float64) []Fly {
 	for i := range flies {
-		if flies[i].Stage == /* larval stage identifier */ {
+		if flies[i].stage == /* larval stage identifier */ {
 			if ShouldMove(moveProbability) {
 				flies[i].Position = GetNewPosition(flies[i].Position)
 			}
@@ -207,31 +207,12 @@ func ShouldMove(moveProb float64) bool {
 
 func GetNewPosition(currentPosition OrderedPair) OrderedPair {
 	// Moore neighborhood moves: stay, or move to one of the 8 surrounding cells
-	dx := rand.Intn(3) - 1 // -1, 0, or 1
-	dy := rand.Intn(3) - 1 // -1, 0, or 1
-	return OrderedPair{X: currentPosition.X + dx, Y: currentPosition.Y + dy}
+
+
+	return OrderedPair{x: currentPosition.x + dx, y: currentPosition.y + dy}
 }
 
 
-
-// Simulate Predator-Prey interaction
-// Update population sizes based on the consumption rates and predation rules
-// Track the population of lantern flies and predators over time
-// Monitor population growth and decline based on the predation or other factors
-func PredatorPreyBehavior(size int) int {
-
-	return size
-
-}
-
-/*
-ComputePreyPopulation (current prey population, current predator population, Prey growth rate,  Prey death rate)
-Prey Population += ( growth rate * current prey population  - death rate * current prey population * current predator population)
-
-
-ComputePredatorPopulation (current prey population, current predator population, Predator growth rate, Predator death rate)
-Predator Population += (- death rate*current predator population + growth rate * current prey population * current predator population)
-*/
 
 // CopyCountry takes a Country and return a copy of all flies in this Country with fields copied over.
 func CopyCountry(currentCountry Country) Country {
@@ -273,56 +254,13 @@ func CopyFly(oldFly Fly) Fly {
 // Returns the net acceleration due to the force of gravity of the Fly (in componets) computed overall flies in the universe.
 func UpdateAccel(currentCountry Country, f Fly) OrderedPair {
 	var accel OrderedPair
-
-	force := ComputeNetForce(currentCountry, f)
-	//Now compute accel
+	// randomly 
 
 	//Split acceleration based on force
 	accel.x = force.x
 	accel.y = force.y
 
 	return accel
-}
-
-// ComputeNetForce thake Country object and Fly b
-// Return a new force (due to gravity) acting on b by all other objecys in given universe
-func ComputeNetForce(currentCountry Country, f Fly) OrderedPair {
-	var NetForce OrderedPair
-
-	//range over all flies other than f and pass
-	// computing the force of gravity to subroutine and then add components to net force
-	for i := range currentCountry.flies {
-		// only compute force if current Fly is not f
-		if currentCountry.flies[i] != f {
-			force := ComputeForce(f, currentCountry.flies[i])
-			// add componets of force to NetForce
-			NetForce.x += force.x
-			NetForce.y += force.y
-		}
-
-	}
-	return NetForce
-}
-
-//Takes teo Fly objects
-//returns the orderedpair corresponding to the compnents of a force vector to the force of gravity of f2 acting on fl
-
-func ComputeForce(fl, f2 Fly) OrderedPair {
-	var force OrderedPair
-
-	// apply formula
-	// F= G *b.mass*f2.mass/(d*d)
-
-	// Compute magnitude
-	d := Distance(fl.position, f2.position)
-	F := G * fl.mass * f2.mass / (d * d)
-
-	// Then split into components
-	dx := f2.position.x - fl.position.x // f2 is pulling on fl position
-	dy := f2.position.y - fl.position.y
-	force.x = F * (dx / d)
-	force.y = F * (dy / d)
-	return force
 }
 
 //UpdateVelocity take a Fly and a float time
