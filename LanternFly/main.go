@@ -3,12 +3,23 @@ package main
 import (
 	"fmt"
 	"gifhelper"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/gif"
 	"math"
 	"math/rand"
+	"net/http"
+	"os"
+
+	"github.com/nfnt/resize"
 )
 
 func main() {
 	fmt.Println("Lantern Flies simulation!")
+
+	http.HandleFunc("/", uploadHandler)
+	http.ListenAndServe(":8080", nil)
 
 	outputFile := "output/output.gif" // Define the output file path and name
 
@@ -106,4 +117,61 @@ func randomUnitVector() Vector {
 
 	// Create and return the unit vector
 	return Vector{X: x, Y: y}
+}
+
+func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		file, _, err := r.FormFile("image")
+		if err != nil {
+			http.Error(w, "Error reading file", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		img, _, err := image.Decode(file)
+		if err != nil {
+			http.Error(w, "Error decoding image", http.StatusInternalServerError)
+			return
+		}
+
+		// Resize the image to a smaller size (you can adjust the width and height)
+		resizedImg := resize.Resize(200, 0, img, resize.Lanczos3)
+
+		// Create a new image with a white background
+		gifImg := image.NewRGBA(image.Rect(0, 0, resizedImg.Bounds().Dx(), resizedImg.Bounds().Dy()))
+		draw.Draw(gifImg, gifImg.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
+
+		// Paste the resized image onto the white background
+		cutterImg, err := cutter.Crop(resizedImg, cutter.Config{
+			Width:  gifImg.Bounds().Dx(),
+			Height: gifImg.Bounds().Dy(),
+			Mode:   cutter.Centered,
+		})
+		if err != nil {
+			http.Error(w, "Error cropping image", http.StatusInternalServerError)
+			return
+		}
+		draw.Draw(gifImg, gifImg.Bounds(), cutterImg, image.Point{}, draw.Over)
+
+		// Create a GIF file
+		outFile, err := os.Create("output.gif")
+		if err != nil {
+			http.Error(w, "Error creating output file", http.StatusInternalServerError)
+			return
+		}
+		defer outFile.Close()
+
+		// Encode the GIF
+		err = gif.Encode(outFile, gifImg, nil)
+		if err != nil {
+			http.Error(w, "Error encoding GIF", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintln(w, "GIF created successfully")
+	} else {
+		// Display the HTML form to upload an image
+		form := `<html><body><form action="/" method="post" enctype="multipart/form-data"><input type="file" name="image"><input type="submit" value="Upload"></form></body></html>`
+		w.Write([]byte(form))
+	}
 }
