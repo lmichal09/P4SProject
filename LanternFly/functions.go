@@ -33,7 +33,7 @@ func PopulationSize(size float64) float64 {
 	var PopulationSize float64
 	PopulationSize = 0.1 * size
 
-	return PopulationSize
+	return PopulationSize 
 }
 
 func UpdateHabitat(currHabitat Habitat, time float64) Habitat {
