@@ -14,7 +14,7 @@ import (
 //on a canvasWidth x canvasWidth canvas
 
 // Drawing Sky slice if it s divisible by drawing frequency
-func AnimateSystem(timePoints []Sky, canvasWidth, drawingFrequency int) []image.Image {
+func AnimateSystem(timePoints []Country, canvasWidth, drawingFrequency int) []image.Image {
 	images := make([]image.Image, 0)
 
 	for i := range timePoints {
@@ -27,7 +27,7 @@ func AnimateSystem(timePoints []Sky, canvasWidth, drawingFrequency int) []image.
 
 // DrawToCanvas generates the image corresponding to a canvas after drawing a Universe
 // object's bodies on a square canvas that is canvasWidth pixels x canvasWidth pixels
-func DrawToCanvas(s Sky, canvasWidth int) image.Image {
+func DrawToCanvas(c Country, canvasWidth int) image.Image {
 	// set a new square canvas
 	c := canvas.CreateNewCanvas(canvasWidth, canvasWidth)
 
