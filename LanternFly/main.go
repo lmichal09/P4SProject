@@ -13,6 +13,7 @@ import (
 	"os"
 
 	"github.com/nfnt/resize"
+	"github.com/oliamb/cutter"
 )
 
 func main() {
