@@ -19,6 +19,7 @@ import (
 func main() {
 	fmt.Println("Lantern Flies simulation!")
 
+	// Set up an HTTP server with the upload handler
 	http.HandleFunc("/", uploadHandler)
 	http.ListenAndServe(":8080", nil)
 
@@ -28,7 +29,7 @@ func main() {
 
 	fmt.Println("Now, simulating boids.")
 
-	// Declare all Sky objects
+	// Declare all Fly objects
 	var initialSky Sky
 	initialSky.Width = skyWidth
 	initialSky.Boids = make([]Boid, 0)
@@ -120,8 +121,16 @@ func randomUnitVector() Vector {
 	return Vector{X: x, Y: y}
 }
 
+// uploadHandler handles the HTTP requests to the root ("/") URL.
+// It serves two main purposes:
+//  1. If the request method is POST, it processes the uploaded image,
+//     resizes it, pastes it onto a white background, and creates a GIF file.
+//  2. If the request method is GET, it displays an HTML form allowing users
+//     to upload an image.
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	// Check if the request method is POST
 	if r.Method == http.MethodPost {
+		// Retrieve the uploaded file from the request
 		file, _, err := r.FormFile("image")
 		if err != nil {
 			http.Error(w, "Error reading file", http.StatusBadRequest)
@@ -129,6 +138,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
+		// Decode the uploaded image
 		img, _, err := image.Decode(file)
 		if err != nil {
 			http.Error(w, "Error decoding image", http.StatusInternalServerError)
@@ -169,6 +179,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Respond to the client with a success message
 		fmt.Fprintln(w, "GIF created successfully")
 	} else {
 		// Display the HTML form to upload an image
