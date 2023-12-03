@@ -72,17 +72,6 @@ func InitializeHabitat(width float64, numberOfFlies, numberOfPredators int) Coun
 		country.flies[i].locationID = rand.Intn(25) // Get data from file, can be changed later
 	}
 
-	// Initialize the predators.
-	for i := range country.predators {
-		country.predators[i].position.x = rand.Float64() * width 
-		country.predators[i].position.y = rand.Float64() * width 
-		country.predators[i].velocity.x = rand.Float64() * 2
-		country.predators[i].velocity.y = rand.Float64() * 5
-		country.predators[i].acceleration.x = rand.Float64() * rand.Float64() * 2
-		country.predators[i].acceleration.y = rand.Float64() * rand.Float64() * 5
-		country.predators[i].PercentEaten = rand.Float64() * 100
-	}
-
 	return country
 }
 
@@ -164,12 +153,4 @@ func LoadStates(filePath string) map[string]*State {
 	}
 
 	return states
-}
-
-
-
-
-
-func InitializePreyPredatorModel() {
-
 }

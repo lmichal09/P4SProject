@@ -8,211 +8,299 @@ package main
 
 import (
 	"math"
+	"math/rand"
 )
 
 const G = 6.67408e-11
 
 // SimulateMigration
-// Growth simulation to show how they invade the map
-// Simulate pattern of lantern flies in Pittsburgh
-func SimulateMigration(initialHabitat Country, numGens int, time float64) []Country {
-	timePoints := make([]Country, numGens+1)
-	timePoints[0] = initialHabitat
+func SimulateMigration(initialCountry Country, numYears int) []Country {
+	timePoints := make([]Country, numYears+1)
+	timePoints[0] = initialCountry
 
 	//range over num of generations and set the i-th country equal to updating the (i-1)th Country
 	for i := 1; i <= len(timePoints); i++ {
-		timePoints[i] = UpdateHabitat(timePoints[i-1], time)
+		timePoints[i] = UpdateCountry(timePoints[i-1])
 		//PopulationSize()
 	}
 	return timePoints
 }
 
-// Track the population of lantern flies and predators over time
-// Monitor population growth and decline based on the predation or other factors
-func PopulationSize(size float64) float64 {
-	var PopulationSize float64
-	PopulationSize = 0.1 * size
+// Population calculates and returns the population of flies in each state.
+func Population(country *Country) int {
+	totalFlies := 0
 
-	return PopulationSize
+	for i := 0; i < len(country.flies); i++ {
+		if country.flies[i].isAlive {
+			totalFlies++
+		}
+	}
+
+	return totalFlies
 }
 
-func UpdateHabitat(currHabitat Habitat, time float64) Habitat {
-	newHabitat := CopyHabitat(currentHabitat) // Copy for all flies and attributes associated with each fly
+// lanternfly only has one generation per year
+// in each generation, the flies go through 5 stages
+// by the end of the year, there should only be eggs
+// need to record the number of adults
+// also keep track on the position of the eggs, which will then be used for next year's simulation
+func UpdateCountry(currCountry Country) Country {
+	newCountry := CopyCountry(currCountry) // Copy for all flies and attributes associated with each fly
 
-	currHabitat.flies = UpdateLifeStage(currHabitat.flies, time)
-	currHabitat.flies = ComputeMortality(currHabitat.flies)
-	currHabitat.flies = ComputeFecundity(currHabitat.flies)
-	currHabitat.flies = ComputeAdultMovement(currHabitat.flies)
-	currHabitat.flies = ComputeLarvalMovement(currHabitat.flies)
-	currHabitat.flies = RemoveSeniors(currHabitat.flies)
+	// loop through days
+	for i := 0; ; i++ {
+		// keep looping until all flies are dead, except for eggs
+		if CheckDead(currCountry.flies) {
+			break
+		}
 
-	return newHabitat
-}
+		// loop through flies
+		for j := 0; j < len(currCountry.flies); j++ {
+			// compute degree days
+			newCountry.flies[j].energy += ComputeDegreeDay(&currCountry.flies[j])
 
+			// update life stage
+			newCountry.flies[j].stage = UpdateLifeStage(&newCountry.flies[j])
 
-// UpdateLifeStage() updates the life stage of flies based on the cumulative degree-days (CDD)
-func UpdateLifeStage(flies []Fly, cdd float64) []Fly {
-    for i := range flies {
+			// compute mortality
+			newCountry.flies[j].isAlive = ComputeMortality(&newCountry.flies[j])
 
-		// TODO: Assuming each fly has a location ID or some identifier to link it to weather data?
-		locationID := flies[i].locationID
-		tempData := GetWeatherData[locationID]
+			// compute movement
+			newCountry.flies[j].position = ComputeMovement(&newCountry.flies[j])
 
-		// compute degree dat for this fly
-		dd := ComputeDegreeDay(tempData.maxTemp, tempData.minTemp, baseTemp, upperTemp)
-
-		// update cumulative degree-days for this fly
-		flies[i].energy += dd
-
-		// update life stage based on cumulative degree-days
-        switch {
-        case cdd < 270:
-            // Egg stage
-            flies[i].stage = 0
-
-        case cdd >= 270 && cdd < 465:
-            // First instar stage
-            flies[i].stage = 1
-
-        case cdd >= 465 && cdd < 645:
-            // Second instar stage
-            flies[i].stage = 2
-
-        case cdd >= 645 && cdd < 825:
-            // Third instar stage
-            flies[i].stage = 3
-
-        case cdd >= 825 && cdd < 1112:
-            // Fourth instar stage
-            flies[i].stage = 4
-
-        case cdd >= 1112 && cdd < 1825:
-            // Adult stage
-            flies[i].stage = 5
-
-        case cdd >= 1825:
-            // After reaching the egg laying stage, the stage remains adult
-            flies[i].stage = 5
-        }
-    }
-
-    return flies
-}
-
-
-// ComputeDegreeDay calculates the degree days for a single day.
-// maxTemp and minTemp are the day's maximum and minimum temperatures.
-// baseTemp is the base (threshold) temperature for development.
-// upperTemp is an optional upper threshold temperature; use a negative value if not needed.
-func ComputeDegreeDay(maxTemp, minTemp, baseTemp, upperTemp float64) float64 {
-    // Calculate the mean temperature for the day
-    meanTemp := (maxTemp + minTemp) / 2
-
-    // If mean temperature is below the base temperature, return 0
-    if meanTemp < baseTemp {
-        return 0
-    }
-
-    // If an upper threshold is specified and the mean temperature is above it, cap the mean temperature
-    if upperTemp >= 0 && meanTemp > upperTemp {
-        meanTemp = upperTemp
-    }
-
-    // Calculate and return the degree days
-    return meanTemp - baseTemp
-}
-
-
-// ComputeMortality updates the mortality status of flies.
-func ComputeMortality(flies []Fly) []Fly {
-    for i := range flies {
-        if flies[i].stage == 3 { // Check for adults
-            // For adults, mortality is based on energy threshold
-            flies[i].Energy += // TODO: Increment energy based on some logic
-
-            if flies[i].Energy >= AdultEnergyThreshold {  
-                flies[i].isAlive = false
-            }
-        } else {
-            // For immature insects, mortality can be based on a daily probability
-            mortalityProbability := // TODO: Calculate based on temperature or other factors
-            if someRandomCondition(mortalityProbability) { // TODO: someRandomCondition to simulate probability
-                flies[i].isAlive = false
-            }
-        }
-    }
-    return flies
-}
-
-// ComputeFecundity 
-// NOTE: females lay one or two egg masses, each containing 30-60 eggs
-// TODO: eggs are laid in the same grid as the adult or the neighboring grid?
-func ComputeFecundity(flies []Fly, temperature float64) []Fly {
-    for i := range flies {
-        if flies[i].stage == 3 { // only adults can lay eggs
-            // Calculate fecundity based on temperature
-            // φ(T) - Oviposition probability function dependent on temperature
-            flies[i].Fecundity = calculateFecundity(temperature)
-        }
-    }
-    return flies
-}
-
-// TODO: the calculation is not in the paper, need to check (Garcia et al. 2016).
-func CalculateFecundity(temperature float64) float64 {
-    // Implement the calculation for fecundity based on temperature
-    return 0 // Placeholder
-}
-
-// ComputeLarvalMovement updates the position of adult flies 
-// TODO: in the paper we referenced, the movement of an adult inside the simulated area at each time step had no preferential direction and was calculated as described in Garcia et al. but i think we should consider the distribution of trees, or other factors
-func ComputeAdultMovement(flies []Fly) []Fly {
-    for i := range flies {
-        if flies[i].stage == 3 { // adult
-            // Calculate movement based on a probability function
-			// TODO: MovingProbability() ???
-            distance := CalculateMovementDistance()
-            flies[i].Position = UpdatePosition(flies[i].Position, distance)
-        }
-    }
-    return flies
-}
-
-func CalculateMovementDistance() float64 {
-    // TODO: Implement logic to calculate movement distance
-    return 0 // Placeholder
-}
-
-func UpdatePosition(position OrderedPair, distance float64) OrderedPair {
-    // Update the position based on the calculated distance
-    // This is a simplified placeholder logic
-    return OrderedPair{position.X + distance, position.Y}
-}
-
-// Each larva had a probability l of moving to an adjacent plant per day, using a Moore neighborhood of radius 1
-func ComputeLarvalMovement(flies []Fly, moveProbability float64) []Fly {
-	for i := range flies {
-		if flies[i].stage == /* larval stage identifier */ {
-			if ShouldMove(moveProbability) {
-				flies[i].Position = GetNewPosition(flies[i].Position)
+			// lay eggs
+			if newCountry.flies[j].stage == 5 {
+				newEggs := ComputeFecundity(newCountry.flies[j])
+				newCountry.flies = append(newCountry.flies, newEggs...)
 			}
 		}
 	}
-	return flies
+
+	// remove all dead flies
+	for i := 0; i < len(newCountry.flies); i++ {
+		if !newCountry.flies[i].isAlive {
+			newCountry.flies = append(newCountry.flies[:i], newCountry.flies[i+1:]...)
+		}
+	}
+
+	return newCountry
 }
 
-func ShouldMove(moveProb float64) bool {
-	return rand.Float64() < moveProb
+// ComputeDegreeDay calculates the degree days for a single day.
+func ComputeDegreeDay(fly *Fly) float64 {
+	// get the quadrant of the fly to determine the temperature
+	quadrant := GetQuadrant(fly)
+
+	// get the temperature of the quadrant
+	temperature := GetTemperature(quadrant) // TODO: this is the max temp?
+
+	// get the base temperature base on the fly's stage
+	baseTemp := GetBaseTemp(fly.stage)
+
+	// calculate the degree days
+	degreeDays := (temperature-baseTemp)/2 - baseTemp
+
+	// if degreeDays is negative, set it to 0
+	if degreeDays < 0 {
+		degreeDays = 0
+	}
+
+	return degreeDays
 }
 
-func GetNewPosition(currentPosition OrderedPair) OrderedPair {
-	// Moore neighborhood moves: stay, or move to one of the 8 surrounding cells
+// GetQuadrant returns the quadrant of the fly.
+// Base temperature used for calculating GDD for nymph. 1: 13.00°C, 2: 12.43°C, 3: 8.48°C, 4: 6.29°C
+func GetBaseTemp(stage int) float64 {
+	temp := 0.0
 
+	if stage == 1 {
+		temp = 13.00
+	} else if stage == 2 {
+		temp = 12.43
+	} else if stage == 3 {
+		temp = 8.48
+	} else if stage == 4 {
+		temp = 6.29
+	}
 
-	return OrderedPair{x: currentPosition.x + dx, y: currentPosition.y + dy}
+	return temp
 }
 
+// UpdateLifeStage() updates the life stage of flies based on the cumulative degree-days (CDD)
+func UpdateLifeStage(fly *Fly) int {
+	stage := fly.stage
 
+	// TODO: hatch
+	// TODO: must survive according to a factor of egg viability & must accumulate a certain number of degree-days to molt to the next stage
+
+	// Required GDD for each stage. 1: 166.6, 208.7, 410.5, 620
+	if fly.energy >= 0 && fly.energy < 166.6 {
+		stage = 1
+	} else if fly.energy >= instar1To2Threshold {
+		stage = 2
+	} else if fly.energy >= instar2To3Threshold {
+		stage = 3
+	} else if fly.energy >= instar3To4Threshold {
+		stage = 4
+	} else if fly.energy >= instar4ToAdultThreshold {
+		stage = 5
+	} else { // TODO: adult to die
+		stage = 6 // dead
+	}
+
+	return stage
+}
+
+// ComputeMortality updates the mortality status of flies.
+// survival rate: 1: 0.6488, 2: 0.9087, 3: 0.8948, 4: 0.822
+func ComputeMortality(fly *Fly) bool {
+	if fly.stage == 1 {
+		if rand.Float64() > sRI1 {
+			fly.isAlive = false
+		}
+	} else if fly.stage == 2 {
+		if rand.Float64() > sRI2 {
+			fly.isAlive = false
+		}
+	} else if fly.stage == 3 {
+		if rand.Float64() > sRI3 {
+			fly.isAlive = false
+		}
+	} else if fly.stage == 4 {
+		if rand.Float64() > sRI4 {
+			fly.isAlive = false
+		}
+	} else if fly.stage == 5 {
+		if rand.Float64() > sRA {
+			fly.isAlive = false
+		}
+	}
+
+	return fly.isAlive
+}
+
+// ComputeFecundity
+// females lay one or two egg masses, each containing 30-60 eggs
+func ComputeFecundity(fly Fly, temperature float64) []Fly {
+	newFly := make([]Fly, 0)
+
+	// TODO: probability of laying eggs
+
+	// randomly choose the number of egg masses
+	numEggMasses := rand.Intn(2) + 1
+
+	// randomly choose the number of eggs in each egg mass
+	numEggs := rand.Intn(30) + 30
+
+	totalEggs := numEggMasses * numEggs
+
+	// location of the eggs is the location of the adult
+	for i := 0; i < totalEggs; i++ {
+		newEgg := Fly{
+			position: OrderedPair{
+				x: fly.position.x,
+				y: fly.position.y,
+			},
+			stage:   0,
+			energy:  0,
+			isAlive: true,
+		}
+		newFly = append(newFly, newEgg)
+	}
+
+	return newFly
+}
+
+// ComputeMovement updates the position of adult flies
+func ComputeMovement(fly *Fly) OrderedPair {
+	// determine the proportion of random vs. directed movement
+	if rand.Float64() < 0.5 {
+		// random movement
+		return RandomMovement(fly)
+	} else {
+		// directed movement
+		return DirectedMovement(fly)
+	}
+}
+
+// RandomMovement updates the position of adult flies based on random movement
+func RandomMovement(fly *Fly) OrderedPair {
+	maxDistance := 0.0 // TODO: max distance
+
+	// randomly choose a distance
+	distance := rand.Float64() * maxDistance
+
+	// randomly choose a direction
+	angle := rand.Float64() * 2 * math.Pi
+
+	// calculate the new position
+	newX := fly.position.x + distance*math.Cos(angle)
+	newY := fly.position.y + distance*math.Sin(angle)
+
+	return OrderedPair{newX, newY}
+}
+
+// DirectedMovement updates the position of adult flies based on directed movement
+func DirectedMovement(fly *Fly) OrderedPair {
+	// identify the nearest host tree or a direction with higher concentration of host trees
+	direction := FindHostDirection(fly.position, hostMaps)
+
+	// move towards the direction, assume a simpler linear movement
+	newX := fly.position.x + direction.x
+	newY := fly.position.y + direction.y
+
+	return OrderedPair{newX, newY}
+}
+
+func FindHostDirection(position OrderedPair, hostMaps []HostMap) OrderedPair {
+	minDistance := math.MaxFloat64
+	var nearestTree HostMap
+
+	// Find the nearest host tree
+	for _, tree := range hostMaps {
+		// calculate distance between position of fly and tree (longtitude, latitude) using Haversine formula
+		distance := Haversine(position, tree)
+		if distance < minDistance {
+			minDistance = distance
+			nearestTree = tree
+		}
+	}
+
+	// TODO: how far can a fly move in one day?
+
+	// Find the direction of the nearest host tree
+	direction := OrderedPair{
+		x: nearestTree.longitude - position.x,
+		y: nearestTree.latitude - position.y,
+	}
+
+	return direction
+}
+
+// Haversine calculates the distance between two points on a sphere
+// on the Earth given their longitude and latitude in degrees.
+func Haversine(position1, position2 OrderedPair) float64 {
+	// Convert latitude and longitude from degrees to radians.
+	lon1Rad := position1 * math.Pi / 180
+	lat1Rad := position1 * math.Pi / 180
+	lon2Rad := position2 * math.Pi / 180
+	lat2Rad := position2 * math.Pi / 180
+
+	// Calculate the differences in latitude and longitude.
+	dLat := lat2Rad - lat1Rad
+	dLon := lon2Rad - lon1Rad
+
+	// Apply the Haversine formula.
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(lat1Rad)*math.Cos(lat2Rad)*
+			math.Sin(dLon/2)*math.Sin(dLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	// Calculate the distance.
+	distance := earthRadius * c
+
+	return distance
+}
 
 // CopyCountry takes a Country and return a copy of all flies in this Country with fields copied over.
 func CopyCountry(currentCountry Country) Country {
@@ -242,8 +330,6 @@ func CopyFly(oldFly Fly) Fly {
 	newFly.position.y = oldFly.position.y
 	newFly.velocity.y = oldFly.velocity.y
 	newFly.acceleration.y = oldFly.acceleration.y
-
-	newFly.PercentConsumed = oldFly.PercentConsumed
 	newFly.stage = oldFly.stage
 
 	return newFly
@@ -254,7 +340,7 @@ func CopyFly(oldFly Fly) Fly {
 // Returns the net acceleration due to the force of gravity of the Fly (in componets) computed overall flies in the universe.
 func UpdateAccel(currentCountry Country, f Fly) OrderedPair {
 	var accel OrderedPair
-	// randomly 
+	// randomly
 
 	//Split acceleration based on force
 	accel.x = force.x
@@ -286,60 +372,22 @@ func UpdatePosition(f Fly, time float64) OrderedPair {
 	return pos
 }
 
-// Distance takes two position ordered pairs and it returns the distance between these two points in 2-D space.
-func Distance(p1, p2 OrderedPair) float64 {
-	// this is the distance formula from days of precalculus long ago ...
-	deltaX := p1.x - p2.x
-	deltaY := p1.y - p2.y
-	return math.Sqrt(deltaX*deltaX + deltaY*deltaY)
-}
-
-func MaxDistance(c Country) float64 {
-	//Initial where to store max distance
-	maxDist := 0.0
-
-	//Iterare though all the flies and calculate distance for all the flies in universe
-	for i := 0; i < len(c.flies); i++ {
-		for j := i; j < len(c.flies); j++ {
-			dist := Distance(c.flies[i].position, c.flies[j].position)
-
-			//Check if dist is the max distance between the two points
-			if dist > maxDist {
-				//make dist the new max distance
-				maxDist = dist
-			}
-
+// CheckDead takes a slice of Fly and return true if all flies are dead
+func CheckDead(flies []Fly) bool {
+	for i := range flies {
+		if flies[i].isAlive {
+			return false
 		}
-
 	}
-
-	return maxDist
-
+	return true
 }
 
-// takes a slice f of Country objects as input
-// returns a slice of float64 variables having the same length as f.flies
-func AverageSpeed(f []Fly) []float64 {
-	//Get length of flies in universe
-	numFlies := len(f)
+func GetQuadrant(fly Fly) int {
+	var quadrant int
 
-	//Initalize average speed
-	//Make array to store average speed of each Fly
-	AvgSpeed := make([]float64, numFlies)
-
-	//Iterate over each Fly
-	for i := 0; i < numFlies; i++ {
-		CombinedSpeed := Speed(f[i].velocity)
-
-		// Calculate the average speed for i-th Fly
-		AvgSpeed[i] = CombinedSpeed
-	}
-
-	//return slice
-	return AvgSpeed
+	return quadrant // Placeholder
 }
 
-func Speed(velocity OrderedPair) float64 {
-	return math.Sqrt(velocity.x*velocity.x + velocity.y*velocity.y)
-
+func GetTemperature(quadrant int) float64 {
+	return 0 // Placeholder
 }
