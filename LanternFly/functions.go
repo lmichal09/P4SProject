@@ -142,18 +142,18 @@ func UpdateCountry(currCountry Country) Country {
 }
 
 // ComputeDegreeDay calculates the degree days for a single day.
-func ComputeDegreeDay(fly *Fly) float64 {
+func ComputeDegreeDay(fly *Fly, quadrants []Quadrant) float64 {
 	// get the quadrant of the fly to determine the temperature
-	quadrant := GetQuadrant(fly)
+	quadrantID := GetQuadrant(fly, quadrants)
 
 	// get the temperature of the quadrant
-	temperature := GetTemperature(quadrant) // TODO: this is the max temp?
+	temperature := GetTemperature(quadrantID, quadrants) // TODO: this is the max temp?
 
 	// get the base temperature base on the fly's stage
 	baseTemp := GetBaseTemp(fly.stage)
 
 	// calculate the degree days
-	degreeDays := (temperature-baseTemp)/2 - baseTemp
+	degreeDays := (temperature+baseTemp)/2 - baseTemp
 
 	// if degreeDays is negative, set it to 0
 	if degreeDays < 0 {
@@ -268,7 +268,7 @@ func ComputeFecundity(fly Fly, temperature float64) []Fly {
 
 // ComputeMovement updates the position of adult flies
 func ComputeMovement(fly *Fly) OrderedPair {
-	// determine the proportion of random vs. directed movement
+	// TODO: determine the proportion of random vs. directed movement
 	if rand.Float64() < 0.5 {
 		// random movement
 		return RandomMovement(fly)
@@ -336,10 +336,10 @@ func FindHostDirection(position OrderedPair, hostMaps []HostMap) OrderedPair {
 // on the Earth given their longitude and latitude in degrees.
 func Haversine(position1, position2 OrderedPair) float64 {
 	// Convert latitude and longitude from degrees to radians.
-	lon1Rad := position1 * math.Pi / 180
-	lat1Rad := position1 * math.Pi / 180
-	lon2Rad := position2 * math.Pi / 180
-	lat2Rad := position2 * math.Pi / 180
+	lon1Rad := position1.x * math.Pi / 180
+	lat1Rad := position1.y * math.Pi / 180
+	lon2Rad := position2.x * math.Pi / 180
+	lat2Rad := position2.y * math.Pi / 180
 
 	// Calculate the differences in latitude and longitude.
 	dLat := lat2Rad - lat1Rad
@@ -437,12 +437,62 @@ func CheckDead(flies []Fly) bool {
 	return true
 }
 
-func GetQuadrant(fly Fly) int {
+// DivideCountry divides the country into 25 sections
+func DivideCountry(country Country) []Quadrant {
+	const (
+		gridRows    int     = 5
+		gridColumns int     = 5
+		totalWidth  float64 = maxLon - minLon
+		totalHeight float64 = maxLat - minLat
+		quadWidth   float64 = totalWidth / float64(gridColumns)
+		quadHeight  float64 = totalHeight / float64(gridRows)
+	)
+
+	qts := make([]Quadrant, 25)
+
+	// Id for each quadrant
+	id := 1
+
+	for row := 0; row < gridRows; row++ {
+		for col := 0; col < gridColumns; col++ {
+			q := Quadrant{
+				id:    id,
+				x:     minLon + (float64(col) * quadWidth),
+				y:     minLat + (float64(row) * quadHeight),
+				width: quadWidth,
+				// temperature will be set later based on weather data
+			}
+			qts = append(qts, q)
+			id++
+		}
+	}
+
+	return qts
+}
+
+// GetQuadrant returns the quadrant of the fly.
+// divide the country into 25 sections
+func GetQuadrant(fly *Fly, quadrants []Quadrant) int {
 	var quadrant int
+
+	// loop through the quadrant slice and find the quadrant with the matching id
+	for _, q := range quadrants {
+		if fly.position.x >= q.x && fly.position.x <= q.x+q.width && fly.position.y >= q.y && fly.position.y <= q.y+q.width {
+			quadrant = q.id
+		}
+	}
 
 	return quadrant // Placeholder
 }
 
-func GetTemperature(quadrant int) float64 {
-	return 0 // Placeholder
+// GetTemperature returns the temperature of the quadrant.
+func GetTemperature(quadrantID int, quadrant []Quadrant) float64 {
+	temp := 0.0
+	// loop through the quadrant slice and find the quadrant with the matching id
+	for _, q := range quadrant {
+		if q.id == quadrantID {
+			temp = q.temperature
+		}
+	}
+	return temp
 }

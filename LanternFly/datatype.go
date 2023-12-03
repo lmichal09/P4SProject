@@ -1,18 +1,5 @@
 package main
 
-// TODO: need to define the following constants
-/*
-// thermal constants: the number of degree-days required for a development change to occur
-// lower temperature threshold: the lowest temperature in which an insect can develop. Below the lower temperature threshold, the insect does not accumulate degree-days; therefore, it may die or enter diapause.
-const (
-    eggToLarvaThreshold float64 = // ... degree-days
-    larvaToPupaThreshold float64 = // ... degree-days
-    pupaToAdultThreshold float64 = // ... degree-days
-	adultToSenileThreshold float64 = // ... degree-days
-	lowerTempThreshold float64 = // ... degree-days
-)
-*/
-
 type Country struct {
 	width      float64
 	flies      []Fly
@@ -64,3 +51,26 @@ type Coordinate struct {
 	Latitude  float64
 	Longitude float64
 }
+
+const (
+	instar1To2Threshold     float64 = 166.6
+	instar2To3Threshold     float64 = 208.7
+	instar3To4Threshold     float64 = 410.5
+	instar4ToAdultThreshold float64 = 620
+	// TODO: adult to die
+	//lowerTempThreshold float64 =
+
+	// survival rate: 1: 0.6488, 2: 0.9087, 3: 0.8948, 4: 0.822
+	sRI1 float64 = 0.6488
+	sRI2 float64 = 0.9087
+	sRI3 float64 = 0.8948
+	sRI4 float64 = 0.822
+	sRA  float64 = 0.5837
+
+	earthRadius float64 = 6371 // km
+
+	minLat float64 = 24.396308  // Southernmost point in the US
+	maxLat float64 = 49.384358  // Northernmost point in the contiguous US
+	minLon float64 = -125.00165 // Westernmost point in the contiguous US
+	maxLon float64 = -66.93457  // Easternmost point in the contiguous US
+)
