@@ -36,3 +36,34 @@ type OrderedPair struct {
 	x float64
 	y float64
 }
+<<<<<<< HEAD
+=======
+
+// QuadTree simply contains a pointer to the root.
+// Another way of doing this would be type QuadTree *Node
+type QuadTree struct {
+	root *Node
+}
+
+// Node object contains a slice of children (this could just as easily be an array of length 4).
+// A node refers to a star. Sometimes, the star will be a "dummy" star, sometimes it is a star in the
+// universe, and sometimes it is nil. Every internal node points to a dummy star.
+type Node struct {
+	children []*Node
+	fly      *Fly
+	sector   Quadrant
+}
+
+// Quadrant is an object representing a sub-square within a larger universe.
+type Quadrant struct {
+	x     float64 //bottom left corner x coordinate
+	y     float64 //bottom right corner y coordinate
+	width float64
+}
+
+// Coordinate represents geographical coordinates with latitude and longitude.
+type Coordinate struct {
+	Latitude  float64
+	Longitude float64
+}
+>>>>>>> 4402fb46c8e5a6a832321fcb264bc955ecd48dbd

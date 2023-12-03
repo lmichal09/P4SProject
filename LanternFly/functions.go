@@ -23,6 +23,8 @@ func SimulateMigration(initialCountry Country, numYears int) []Country {
 		timePoints[i] = UpdateCountry(timePoints[i-1])
 		//PopulationSize()
 	}
+	finaltimePoints := SorttheTimpepoints(timepoints)
+
 	return timePoints
 }
 
@@ -37,6 +39,59 @@ func Population(country *Country) int {
 	}
 
 	return totalFlies
+}
+
+func SorttheTimePoints(timepoints []Country) []Country {
+	n := len(timepoints)
+
+	for i := 0; i <= n; i++ {
+		timepoints[i] = SorttheCountry(timepoints[i])
+	}
+	return timepoints
+}
+
+func SorttheCountry(country Country) Country {
+	n := len(country.flies)
+
+	for i := 0; i <= n; i++ {
+		country.flies[i] = SorttheFlies(country.flies[i])
+
+	}
+	return country
+}
+
+func SorttheFlies(fly Fly) Fly {
+
+	if fly.stage == 0 {
+		fly.color.red = 237
+		fly.color.blue = 7
+		fly.color.green = 15
+	} else if fly.stage == 1 {
+		fly.color.red = 252
+		fly.color.blue = 20
+		fly.color.green = 144
+	} else if fly.stage == 2 {
+		fly.color.red = 252
+		fly.color.blue = 20
+		fly.color.green = 249
+	} else if fly.stage == 3 {
+		fly.color.red = 43
+		fly.color.blue = 20
+		fly.color.green = 252
+	} else if fly.stage == 4 {
+		fly.color.red = 20
+		fly.color.blue = 252
+		fly.color.green = 214
+	} else if fly.stage == 5 {
+		fly.color.red = 175
+		fly.color.blue = 252
+		fly.color.green = 20
+	} else if fly.stage == 6 {
+		fly.color.red = 0
+		fly.color.blue = 0
+		fly.color.green = 0
+	}
+	return fly
 }
 
 // lanternfly only has one generation per year
