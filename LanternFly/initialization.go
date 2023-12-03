@@ -9,12 +9,10 @@ import (
 	"strings"
 )
 
-
-
 /* The life cycle of the lanternfly is as follows:
 Eggs can be found on any outdoor surface from October through June.
 
-Egg: October- June ** 
+Egg: October- June **
 Nymph1: May-July **
 Nypmh2 : July- September
 Adult: July- December
@@ -25,8 +23,7 @@ Time: 2015-2021
 25 States: "PA" "NJ" "VA" "DE" "MD" "NY" "UT" "MA" "MI" "NC" "WV" "CT" "VT" "OH" "IN" "KY" "DC" "SC" "NM" "AZ" "RI" "OR" "MO" "KS" "ME"
 */
 
-
-/* Thermal constant for each stage of the lanternfly life cycle	
+/* Thermal constant for each stage of the lanternfly life cycle
 Table 2 Values of K1, K2, K3 and K4 (degree-days)
 K1 		K2 		K3 		K4
 39.5 	250 	108.7 	180
@@ -44,19 +41,19 @@ func InitializeHabitat(width float64, numberOfFlies, numberOfPredators int) Coun
 	// Initialize the flies.
 	for i := range country.flies {
 		country.flies[i].position = LoadLatternFlyPosition("latternfly.csv")
-		
+
 		// Velocity and acceleration are random since no data is available
 		country.flies[i].velocity.x = rand.Float64() * 2
 		country.flies[i].velocity.y = rand.Float64() * 5
 		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 2
 		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 5
-		
+
 		//latternfly's stage random from 1-4
 		country.flies[i].stage = rand.Intn(4)
 
 		// Initialize the energy of flies
 		// stage: egg (1), nymph1 (2), nymph2 (3), adult1 (4), adult 2 (5)
-		if country.flies[i].stage == 1 { /
+		if country.flies[i].stage == 1 {
 			country.flies[i].energy = rand.Float64() * 39.5
 		} else if country.flies[i].stage == 2 { // instar1
 			country.flies[i].energy = rand.Float64() * 250
@@ -74,8 +71,8 @@ func InitializeHabitat(width float64, numberOfFlies, numberOfPredators int) Coun
 
 	// Initialize the predators.
 	for i := range country.predators {
-		country.predators[i].position.x = rand.Float64() * width 
-		country.predators[i].position.y = rand.Float64() * width 
+		country.predators[i].position.x = rand.Float64() * width
+		country.predators[i].position.y = rand.Float64() * width
 		country.predators[i].velocity.x = rand.Float64() * 2
 		country.predators[i].velocity.y = rand.Float64() * 5
 		country.predators[i].acceleration.x = rand.Float64() * rand.Float64() * 2
