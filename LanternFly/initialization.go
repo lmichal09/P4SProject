@@ -150,8 +150,4 @@ func LoadStates(filePath string) map[string]*State {
 	}
 
 	return states
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 4402fb46c8e5a6a832321fcb264bc955ecd48dbd

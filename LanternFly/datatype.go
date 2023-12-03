@@ -36,8 +36,6 @@ type OrderedPair struct {
 	x float64
 	y float64
 }
-<<<<<<< HEAD
-=======
 
 // QuadTree simply contains a pointer to the root.
 // Another way of doing this would be type QuadTree *Node
@@ -66,4 +64,3 @@ type Coordinate struct {
 	Latitude  float64
 	Longitude float64
 }
->>>>>>> 4402fb46c8e5a6a832321fcb264bc955ecd48dbd
