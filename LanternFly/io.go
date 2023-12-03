@@ -45,10 +45,9 @@ func ReadSamplesFromDirectory(directory string) map[string][]SampleData {
 		// Read data from file
 		data := ReadSampleDataFromFile(filePath)
 
-		// Use pointID as the key for the map
+		// Use PointID as the key for the map
 		for _, sample := range data {
-			// Assuming pointID is a string; if it's not, convert it to a string
-			key := strconv.Itoa(SampleData.PointID)
+			key := sample.PointID
 			allData[key] = append(allData[key], sample)
 		}
 	}
