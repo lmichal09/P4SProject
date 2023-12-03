@@ -1,42 +1,39 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"log"
 	"math/rand"
-	"os"
-	"strings"
+	"time"
 )
 
 /* The life cycle of the lanternfly is as follows:
 Eggs can be found on any outdoor surface from October through June.
+May-June: Eggs hatch into 1st instar nymphs.
+May-July: 1st instar nymphs molt into 2nd instar nymphs, 2nd instar nymphs molt into 3rd instar nymphs.
+july-September: 3rd instar nymphs molt into 4th instar nymphs.
+July-December: 4th instar nymphs molt into adults.
+September-November: Adults lay eggs.
+Oct-June: Eggs overwinter.
 
-Egg: October- June **
-Nymph1: May-July **
-Nypmh2 : July- September
-Adult: July- December
-Adult lays eggs (fecundity): September - November
-
-Data of monthly temperature: October, November, December, May, June, July, August, September
-Time: 2015-2021
+Time: 2021
 25 States: "PA" "NJ" "VA" "DE" "MD" "NY" "UT" "MA" "MI" "NC" "WV" "CT" "VT" "OH" "IN" "KY" "DC" "SC" "NM" "AZ" "RI" "OR" "MO" "KS" "ME"
+
+The life cycle of the lanternfly is as follows: 6 stages 0-5, stage 7: Dead
 */
 
-/* Thermal constant for each stage of the lanternfly life cycle
-Table 2 Values of K1, K2, K3 and K4 (degree-days)
-K1 		K2 		K3 		K4
-39.5 	250 	108.7 	180
+// width and population need to be read from file
 
-*/
+func InitializeCountry(width float64, population int) Country {
 
-func InitializeHabitat(width float64, numberOfFlies, numberOfPredators int) Country {
 	country := Country{} // Create the initial country.
 	country.width = width
-	country.flies = make([]Fly, numberOfFlies)
-	country.predators = make([]Predator, numberOfPredators)
-	country.states = make([]Quadrant, 25)
-	country.states = LoadStates("states.csv")
+	country.flies = make([]Fly, population)
+	country.population = population
+
+	// Read Weather data and store in a map
+	MayJuneWeather := make(map[string]OrderedPair)
+
+	// Load from subfolder of Data
+	MayJuneWeather = LoadWeatherData("Data/Hatch_May-Jun")
 
 	// Initialize the flies.
 	for i := range country.flies {
@@ -48,106 +45,76 @@ func InitializeHabitat(width float64, numberOfFlies, numberOfPredators int) Coun
 		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 2
 		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 5
 
-		//latternfly's stage random from 1-4
-		country.flies[i].stage = rand.Intn(4)
+		//latternfly's stage consider as 0 : egg state
+		country.flies[i].stage = 0
 
-		// Initialize the energy of flies
-		// stage: egg (1), nymph1 (2), nymph2 (3), adult1 (4), adult 2 (5)
-		if country.flies[i].stage == 1 {
-			country.flies[i].energy = rand.Float64() * 39.5
-		} else if country.flies[i].stage == 2 { // instar1
-			country.flies[i].energy = rand.Float64() * 250
-		} else if country.flies[i].stage == 3 {
-			country.flies[i].energy = rand.Float64() * 108.7
-		} else if country.flies[i].stage == 4 {
-			country.flies[i].energy = rand.Float64() * 180
+		// Set Energy to every fly
+		// Latternfly's energy is random from its state and weather data from May to June
+		// random from minTemp of the state to maxTemp of the state
+		// States are sorted by alphabetical order
+		// AZ, CT, DC, DE, IN, KS, KY, MA, MD, ME, MI, MO, NC, NJ, NM, NY, OH, OR, PA, RI, SC, UT, VA, VT, WV
+
+		if country.flies[i].state == "AZ" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["AZ"].Y, MayJuneWeather["AZ"].X)
+		} else if country.flies[i].state == "CT" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["CT"].Y, MayJuneWeather["CT"].X)
+		} else if country.flies[i].state == "DC" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["DC"].Y, MayJuneWeather["DC"].X)
+		} else if country.flies[i].state == "DE" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["DE"].Y, MayJuneWeather["DE"].X)
+		} else if country.flies[i].state == "IN" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["IN"].Y, MayJuneWeather["IN"].X)
+		} else if country.flies[i].state == "KS" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["KS"].Y, MayJuneWeather["KS"].X)
+		} else if country.flies[i].state == "KY" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["KY"].Y, MayJuneWeather["KY"].X)
+		} else if country.flies[i].state == "MA" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["MA"].Y, MayJuneWeather["MA"].X)
+		} else if country.flies[i].state == "MD" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["MD"].Y, MayJuneWeather["MD"].X)
+		} else if country.flies[i].state == "ME" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["ME"].Y, MayJuneWeather["ME"].X)
+		} else if country.flies[i].state == "MI" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["MI"].Y, MayJuneWeather["MI"].X)
+		} else if country.flies[i].state == "MO" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["MO"].Y, MayJuneWeather["MO"].X)
+		} else if country.flies[i].state == "NC" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["NC"].Y, MayJuneWeather["NC"].X)
+		} else if country.flies[i].state == "NJ" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["NJ"].Y, MayJuneWeather["NJ"].X)
+		} else if country.flies[i].state == "NM" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["NM"].Y, MayJuneWeather["NM"].X)
+		} else if country.flies[i].state == "NY" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["NY"].Y, MayJuneWeather["NY"].X)
+		} else if country.flies[i].state == "OH" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["OH"].Y, MayJuneWeather["OH"].X)
+		} else if country.flies[i].state == "OR" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["OR"].Y, MayJuneWeather["OR"].X)
+		} else if country.flies[i].state == "PA" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["PA"].Y, MayJuneWeather["PA"].X)
+		} else if country.flies[i].state == "RI" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["RI"].Y, MayJuneWeather["RI"].X)
+		} else if country.flies[i].state == "SC" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["SC"].Y, MayJuneWeather["SC"].X)
+		} else if country.flies[i].state == "UT" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["UT"].Y, MayJuneWeather["UT"].X)
+		} else if country.flies[i].state == "VA" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["VA"].Y, MayJuneWeather["VA"].X)
+		} else if country.flies[i].state == "VT" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["VT"].Y, MayJuneWeather["VT"].X)
+		} else if country.flies[i].state == "WV" {
+			country.flies[i].energy += randomInRange(MayJuneWeather["WV"].Y, MayJuneWeather["WV"].X)
 		}
-		// when initialize, consider all flies are alive
-		country.flies[i].isAlive = true
-
-		// locationID is random from 0-24
-		country.flies[i].locationID = rand.Intn(25) // Get data from file, can be changed later
 	}
 
+	//randomly choose 10% of the flies to be alive
+	for i := 0; i < population/10; i++ {
+		country.flies[rand.Intn(population)].isAlive = true
+	}
 	return country
 }
 
-func LoadLatternFlyPosition(filePath string) OrderedPair {
-	// Read state widths from file
-	file, err := os.Open(filePath)
-	if err != nil {
-		log.Fatalf("failed to open file: %v", err)
-	}
-	defer file.Close()
-
-	// File is space-separated
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		parts := strings.Split(line, " ")
-		if len(parts) != 2 {
-			log.Fatalf("invalid line format: %v", line)
-		}
-
-		// Parse the x and y coordinates
-		var x, y float64
-		_, err := fmt.Sscanf(parts[0], "%f", &x)
-		if err != nil {
-			log.Fatalf("invalid x for latternfly: %v", err)
-		}
-		_, err = fmt.Sscanf(parts[1], "%f", &y)
-		if err != nil {
-			log.Fatalf("invalid y for latternfly: %v", err)
-		}
-	}
-	return OrderedPair{x, y}
-}
-
-// LoadStates reads the state widths from a file and returns a map of state abbreviations to State objects.
-// The file is assumed to be comma-separated, with one state per line.
-func LoadStates(filePath string) map[string]*State {
-	// Initialize the states
-	stateAbbreviations := []string{"PA", "NJ", "VA", "DE", "MD", "NY", "UT", "MA", "MI", "NC", "WV", "CT", "VT", "OH", "IN", "KY", "DC", "SC", "NM", "AZ", "RI", "OR", "MO", "KS", "ME"}
-
-	// Create a map to hold state data
-	states := make(map[string]*State)
-	for _, abbr := range stateAbbreviations {
-		states[abbr] = &State{Abbreviation: abbr}
-	}
-
-	// Read state widths from file
-	file, err := os.Open(filePath)
-	if err != nil {
-		log.Fatalf("failed to open file: %v", err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		parts := strings.Split(line, ",") // Assuming the file is comma-separated
-		if len(parts) != 2 {
-			log.Fatalf("invalid line format: %v", line)
-		}
-
-		abbr := parts[0]
-		var width float64
-		_, err := fmt.Sscanf(parts[1], "%f", &width)
-		if err != nil {
-			log.Fatalf("invalid width for state %s: %v", abbr, err)
-		}
-
-		if state, ok := states[abbr]; ok {
-			state.Width = width
-		} else {
-			log.Printf("Warning: State '%s' not found in the initial list", abbr)
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-
-	return states
+func randomInRange(min, max float64) float64 {
+	rand.Seed(time.Now().UnixNano()) // Initialize the random number generator
+	return min + rand.Float64()*(max-min)
 }
