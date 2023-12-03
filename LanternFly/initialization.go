@@ -165,11 +165,3 @@ func LoadStates(filePath string) map[string]*State {
 
 	return states
 }
-
-
-
-
-
-func InitializePreyPredatorModel() {
-
-}
