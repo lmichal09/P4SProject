@@ -1,0 +1,13 @@
+Massachusetts May-July Maximum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202107,75.8,-0.5
+,,
+Massachusetts May-July Minimum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202107,55.3,0.5

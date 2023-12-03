@@ -1,0 +1,13 @@
+Maryland July-September Maximum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202109,84.5,-0.1
+,,
+Maryland July-September Minimum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202109,64.8,0.2
