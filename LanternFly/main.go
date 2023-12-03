@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"image/draw"
 	"image/gif"
+	"math/rand"
 	"os"
 )
 
@@ -59,14 +60,65 @@ func ReadCoordinates(filename string) ([]Coordinate, error) {
 
 // CreateInitialHabitat creates the initial habitat based on the given coordinates
 func CreateInitialHabitat(coordinates []Coordinate) Country {
-	// TODO: Implement logic to initialize the habitat based on coordinates
-	// You may use the InitializeHabitat function from your existing code
+	country := Country{}  // Create the initial country.
+	country.width = 100.0 // Set a default width, you can adjust this value as needed
 
-	// Placeholder - Replace with actual logic
-	width := 100.0
-	numFlies := 100
+	// Initialize the states
+	//country.states = make([]Quadrant, 25)
+	//country.states = LoadStates("states.csv")
+
+	// Initialize the flies based on the provided coordinates
+	numFlies := len(coordinates)
+	country.flies = make([]Fly, numFlies)
+
+	for i, coord := range coordinates {
+		// Use coordinates to set the initial position of flies
+		country.flies[i].position.x = coord.Longitude
+		country.flies[i].position.y = coord.Latitude
+
+		// Velocity and acceleration are random since no data is available
+		country.flies[i].velocity.x = rand.Float64() * 2
+		country.flies[i].velocity.y = rand.Float64() * 5
+		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 2
+		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 5
+
+		// Lantern fly's stage random from 1-4
+		country.flies[i].stage = rand.Intn(4) + 1
+
+		// Initialize the energy of flies based on their stage
+		switch country.flies[i].stage {
+		case 1: // egg
+			country.flies[i].energy = rand.Float64() * 39.5
+		case 2: // nymph1
+			country.flies[i].energy = rand.Float64() * 250
+		case 3: // nymph2
+			country.flies[i].energy = rand.Float64() * 108.7
+		case 4: // adult
+			country.flies[i].energy = rand.Float64() * 180
+		}
+
+		// When initialized, consider all flies are alive
+		country.flies[i].isAlive = true
+
+		// LocationID is random from 0-24
+		country.flies[i].locationID = rand.Intn(25) // Get data from file, can be changed later
+	}
+
+	// Initialize the predators.
 	numPredators := 10
-	return InitializeHabitat(width, numFlies, numPredators)
+	country.predators = make([]Predator, numPredators)
+
+	for i := range country.predators {
+		country.predators[i].position.x = rand.Float64() * country.width
+		country.predators[i].position.y = rand.Float64() * country.width
+		country.predators[i].velocity.x = rand.Float64() * 2
+		country.predators[i].velocity.y = rand.Float64() * 5
+		country.predators[i].acceleration.x = rand.Float64() * rand.Float64() * 2
+		country.predators[i].acceleration.y = rand.Float64() * rand.Float64() * 5
+		country.predators[i].PercentEaten = rand.Float64() * 100
+	}
+
+	return country
 }
 
 // SaveGIF saves a sequence of images as a GIF file
