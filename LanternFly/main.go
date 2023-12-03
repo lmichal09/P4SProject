@@ -58,14 +58,10 @@ func ReadCoordinates(filename string) ([]Coordinate, error) {
 	return coordinates, nil
 }
 
-// CreateInitialHabitat creates the initial habitat based on the given coordinates
+// CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
 func CreateInitialHabitat(coordinates []Coordinate) Country {
 	country := Country{}  // Create the initial country.
 	country.width = 100.0 // Set a default width, you can adjust this value as needed
-
-	// Initialize the states
-	//country.states = make([]Quadrant, 25)
-	//country.states = LoadStates("states.csv")
 
 	// Initialize the flies based on the provided coordinates
 	numFlies := len(coordinates)
@@ -102,20 +98,6 @@ func CreateInitialHabitat(coordinates []Coordinate) Country {
 
 		// LocationID is random from 0-24
 		country.flies[i].locationID = rand.Intn(25) // Get data from file, can be changed later
-	}
-
-	// Initialize the predators.
-	numPredators := 10
-	country.predators = make([]Predator, numPredators)
-
-	for i := range country.predators {
-		country.predators[i].position.x = rand.Float64() * country.width
-		country.predators[i].position.y = rand.Float64() * country.width
-		country.predators[i].velocity.x = rand.Float64() * 2
-		country.predators[i].velocity.y = rand.Float64() * 5
-		country.predators[i].acceleration.x = rand.Float64() * rand.Float64() * 2
-		country.predators[i].acceleration.y = rand.Float64() * rand.Float64() * 5
-		country.predators[i].PercentEaten = rand.Float64() * 100
 	}
 
 	return country

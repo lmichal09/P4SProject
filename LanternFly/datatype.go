@@ -63,3 +63,9 @@ type Quadrant struct {
 	y     float64 //bottom right corner y coordinate
 	width float64
 }
+
+// Coordinate represents geographical coordinates with latitude and longitude.
+type Coordinate struct {
+	Latitude  float64
+	Longitude float64
+}
