@@ -19,7 +19,7 @@ func SimulateMigration(initialCountry Country, numYears int) []Country {
 	timePoints[0] = initialCountry
 
 	//range over num of generations and set the i-th country equal to updating the (i-1)th Country
-	for i := 1; i <= len(timePoints); i++ {
+	for i := 1; i < len(timePoints); i++ {
 		timePoints[i] = UpdateCountry(timePoints[i-1])
 		//PopulationSize()
 	}
@@ -184,6 +184,10 @@ func GetBaseTemp(stage int) float64 {
 // UpdateLifeStage() updates the life stage of flies based on the cumulative degree-days (CDD)
 func UpdateLifeStage(fly *Fly) int {
 	stage := fly.stage
+
+	if fly.stage < 0 || fly.stage > 5 {
+		panic("invalid life stage")
+	}
 
 	// TODO: hatch
 	// TODO: must survive according to a factor of egg viability & must accumulate a certain number of degree-days to molt to the next stage
@@ -391,6 +395,7 @@ func CopyFly(oldFly Fly) Fly {
 
 }
 
+// TODO: no need this
 // UpdateAccel takes a universe object and a Fly int hat universe.
 // Returns the net acceleration due to the force of gravity of the Fly (in componets) computed overall flies in the universe.
 func UpdateAccel(currentCountry Country, f Fly) OrderedPair {
@@ -404,9 +409,8 @@ func UpdateAccel(currentCountry Country, f Fly) OrderedPair {
 	return accel
 }
 
-//UpdateVelocity take a Fly and a float time
-//Uses components in that Fly estimates over time secs
-
+// UpdateVelocity take a Fly and a float time
+// Uses components in that Fly estimates over time secs
 func UpdateVelocity(f Fly, time float64) OrderedPair {
 	var vel OrderedPair
 
@@ -448,6 +452,11 @@ func DivideCountry(country Country) []Quadrant {
 		quadHeight  float64 = totalHeight / float64(gridRows)
 	)
 
+	// Check for invalid country dimensions
+	if country.width <= 0 || country.height <= 0 {
+		panic("invalid country dimensions")
+	}
+
 	qts := make([]Quadrant, 25)
 
 	// Id for each quadrant
@@ -482,6 +491,9 @@ func GetQuadrant(fly *Fly, quadrants []Quadrant) int {
 		}
 	}
 
+	// if the fly is out of bounds, panic
+	panic("fly is out of simulation bounds")
+
 	return quadrant // Placeholder
 }
 
@@ -494,5 +506,10 @@ func GetTemperature(quadrantID int, quadrant []Quadrant) float64 {
 			temp = q.temperature
 		}
 	}
+
+	if quadrantID < 1 || quadrantID > len(quadrants) {
+		panic("invalid quadrant ID")
+	}
+
 	return temp
 }
