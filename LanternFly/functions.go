@@ -1,8 +1,7 @@
 //List functions needed from Lantern Fly Simulation
 //Author: Leila Michal, Emma Bouchard, Tiffany Ku, and Thu Pham
 
-//NOTE: ctrl + f "TODO" to find all the things that need to be done
-// viability and fecundity are related to temperature
+//NOTE: "TODO": all the things that need to be done
 
 package main
 
@@ -21,7 +20,7 @@ func SimulateMigration(initialCountry Country, numYears int) []Country {
 	//range over num of generations and set the i-th country equal to updating the (i-1)th Country
 	for i := 1; i < len(timePoints); i++ {
 		timePoints[i] = UpdateCountry(timePoints[i-1])
-		//PopulationSize()
+		//TODO: PopulationSize()
 	}
 	finaltimePoints := SorttheTimpepoints(timepoints)
 
@@ -102,6 +101,8 @@ func SorttheFlies(fly Fly) Fly {
 func UpdateCountry(currCountry Country) Country {
 	newCountry := CopyCountry(currCountry) // Copy for all flies and attributes associated with each fly
 
+	var totalNewEggs []Fly
+
 	// loop through days
 	for i := 0; ; i++ {
 		// keep looping until all flies are dead, except for eggs
@@ -126,7 +127,7 @@ func UpdateCountry(currCountry Country) Country {
 			// lay eggs
 			if newCountry.flies[j].stage == 5 {
 				newEggs := ComputeFecundity(newCountry.flies[j])
-				newCountry.flies = append(newCountry.flies, newEggs...)
+				totalNewEggs = append(totalNewEggs, newEggs...)
 			}
 		}
 	}
@@ -137,6 +138,13 @@ func UpdateCountry(currCountry Country) Country {
 			newCountry.flies = append(newCountry.flies[:i], newCountry.flies[i+1:]...)
 		}
 	}
+
+	if len(totalNewEggs) > 0 {
+		panic("something's wrong")
+	}
+
+	// add new eggs to the country
+	newCountry.flies = append(newCountry.flies, totalNewEggs...)
 
 	return newCountry
 }
@@ -195,11 +203,11 @@ func UpdateLifeStage(fly *Fly) int {
 	// Required GDD for each stage. 1: 166.6, 208.7, 410.5, 620
 	if fly.energy >= 0 && fly.energy < 166.6 {
 		stage = 1
-	} else if fly.energy >= instar1To2Threshold {
+	} else if fly.energy >= instar1To2Threshold && fly.energy < instar2To3Threshold {
 		stage = 2
-	} else if fly.energy >= instar2To3Threshold {
+	} else if fly.energy >= instar2To3Threshold && fly.energy < instar3To4Threshold {
 		stage = 3
-	} else if fly.energy >= instar3To4Threshold {
+	} else if fly.energy >= instar3To4Threshold && fly.energy < instar4ToAdultThreshold {
 		stage = 4
 	} else if fly.energy >= instar4ToAdultThreshold {
 		stage = 5
@@ -286,6 +294,11 @@ func ComputeMovement(fly *Fly) OrderedPair {
 func RandomMovement(fly *Fly) OrderedPair {
 	maxDistance := 0.0 // TODO: max distance
 
+	// possibility of flies carried by human
+	if rand.Float64() < 0.1 {
+		return LongDistanceMovement(fly)
+	}
+
 	// randomly choose a distance
 	distance := rand.Float64() * maxDistance
 
@@ -293,22 +306,40 @@ func RandomMovement(fly *Fly) OrderedPair {
 	angle := rand.Float64() * 2 * math.Pi
 
 	// calculate the new position
-	newX := fly.position.x + distance*math.Cos(angle)
-	newY := fly.position.y + distance*math.Sin(angle)
+	new := ConvertDistanceToCoordinates(distance, angle, fly.position)
 
-	return OrderedPair{newX, newY}
+	return new
+}
+
+// LongDistanceMovement simulates long-distance movement for a Fly.
+func LongDistanceMovement(fly *Fly) OrderedPair {
+	maxDistance := 2000.0 // TODO: Define your max long-distance here (in kilometers)
+
+	// Randomly choose a distance within the maximum limit
+	distance := rand.Float64() * maxDistance
+
+	// Randomly choose a direction
+	angle := rand.Float64() * 2 * math.Pi
+
+	// Calculate the new position using the conversion function
+	return ConvertDistanceToCoordinates(distance, angle, fly.position)
 }
 
 // DirectedMovement updates the position of adult flies based on directed movement
-// TODO: can make this more complex
 func DirectedMovement(fly *Fly) OrderedPair {
 	// identify the nearest host tree or a direction with higher concentration of host trees
 	direction := FindHostDirection(fly.position, hostMaps)
 
 	// move towards the direction, assume a simpler linear movement
-	newX := fly.position.x + direction.x
-	newY := fly.position.y + direction.y
+	new := ConvertDistanceToCoordinates(1, direction, fly.position)
 
+	return new
+}
+
+// ConvertDistanceToCoordinates converts a given distance (in kilometers) and direction (in radians) into new coordinates.
+func ConvertDistanceToCoordinates(distance, direction float64, startingCoordinates OrderedPair) OrderedPair {
+	newX := startingCoordinates.x + (distance/EarthRadius)*(180.0/math.Pi)*math.Cos(direction)
+	newY := startingCoordinates.y + (distance/EarthRadius)*(180.0/math.Pi)*math.Sin(direction)
 	return OrderedPair{newX, newY}
 }
 
