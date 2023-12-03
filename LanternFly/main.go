@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"gifhelper"
 	"image"
@@ -11,6 +12,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/nfnt/resize"
 	"github.com/oliamb/cutter"
@@ -78,6 +80,48 @@ func main() {
 		} else {
 			fmt.Printf("Data written to %s\n", csvFilename)
 		}
+	}
+
+	file, err := os.Open("tree.csv")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	// Create a CSV reader
+	reader := csv.NewReader(file)
+
+	// Read the file
+	records, err := reader.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return
+	}
+
+	// Skip the header row and process the data
+	habitats := make([]OrderedPair, 0)
+	for i, record := range records {
+		if i == 0 { // Skip header
+			continue
+		}
+
+		// Parse longitude
+		longitude, err := strconv.ParseFloat(record[0], 64) // Assuming longitude is in the first column
+		if err != nil {
+			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
+			continue
+		}
+
+		// Parse latitude
+		latitude, err := strconv.ParseFloat(record[1], 64) // Assuming latitude is in the second column
+		if err != nil {
+			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
+			continue
+		}
+
+		// Append the habitat to the slice
+		habitats = append(habitats, OrderedPair{Longitude: longitude, Latitude: latitude})
 	}
 
 	fmt.Println("Success! Now we are ready to do something cool with our data.")

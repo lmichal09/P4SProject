@@ -15,10 +15,17 @@ const (
 
 type Fly struct {
 	position, velocity, acceleration OrderedPair
-	stage                            int     // 0 = egg, 1 = instar1, 2 = instar2, 3 = instar3, 4 = instar4, 5 = adult
+	stage                            int     // 0 = egg, 1 = instar1, 2 = instar2, 3 = instar3, 4 = instar4, 5 = adult, 6= dead
 	energy                           float64 // Degree-days
 	isAlive                          bool
 	locationID                       int
+	color                            Color // color to show on scatter plot (red, orange, yellow, green, blue, purple, black) neon colors
+
+}
+type Color struct {
+	red   uint
+	blue  uint
+	green uint
 }
 
 type stage struct {
