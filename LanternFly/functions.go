@@ -300,6 +300,7 @@ func RandomMovement(fly *Fly) OrderedPair {
 }
 
 // DirectedMovement updates the position of adult flies based on directed movement
+// TODO: can make this more complex
 func DirectedMovement(fly *Fly) OrderedPair {
 	// identify the nearest host tree or a direction with higher concentration of host trees
 	direction := FindHostDirection(fly.position, hostMaps)
@@ -359,76 +360,6 @@ func Haversine(position1, position2 OrderedPair) float64 {
 	distance := earthRadius * c
 
 	return distance
-}
-
-// CopyCountry takes a Country and return a copy of all flies in this Country with fields copied over.
-func CopyCountry(currentCountry Country) Country {
-	var newCountry Country
-	newCountry.width = currentCountry.width
-
-	// copy flies over
-	numFlies := len(currentCountry.flies)
-	newCountry.flies = make([]Fly, numFlies)
-
-	//copy every fly's field in the new Country
-	for i := range newCountry.flies {
-
-		newCountry.flies[i] = CopyFly(currentCountry.flies[i])
-
-	}
-	return newCountry
-
-}
-
-// CopyFly takes Fly object and return an a Fly with all field of input object
-func CopyFly(oldFly Fly) Fly {
-	var newFly Fly
-
-	//copy ordered pair
-	newFly.position.x = oldFly.position.x
-	newFly.position.y = oldFly.position.y
-	newFly.velocity.y = oldFly.velocity.y
-	newFly.acceleration.y = oldFly.acceleration.y
-	newFly.stage = oldFly.stage
-
-	return newFly
-
-}
-
-// TODO: no need this
-// UpdateAccel takes a universe object and a Fly int hat universe.
-// Returns the net acceleration due to the force of gravity of the Fly (in componets) computed overall flies in the universe.
-func UpdateAccel(currentCountry Country, f Fly) OrderedPair {
-	var accel OrderedPair
-	// randomly
-
-	//Split acceleration based on force
-	accel.x = force.x
-	accel.y = force.y
-
-	return accel
-}
-
-// UpdateVelocity take a Fly and a float time
-// Uses components in that Fly estimates over time secs
-func UpdateVelocity(f Fly, time float64) OrderedPair {
-	var vel OrderedPair
-
-	vel.x = f.velocity.x + f.acceleration.x*time
-	vel.y = f.velocity.y + f.acceleration.y*time
-
-	return vel
-}
-
-// Updatepositon take a Fly and a float time
-// Uses components in that Fly estimates over time secs
-func UpdatePosition(f Fly, time float64) OrderedPair {
-	var pos OrderedPair
-
-	pos.x = f.position.x + f.velocity.x*time + 0.5*f.acceleration.x*time*time
-	pos.y = f.position.y + f.velocity.y*time + 0.5*f.acceleration.y*time*time
-
-	return pos
 }
 
 // CheckDead takes a slice of Fly and return true if all flies are dead
@@ -512,4 +443,74 @@ func GetTemperature(quadrantID int, quadrant []Quadrant) float64 {
 	}
 
 	return temp
+}
+
+// CopyCountry takes a Country and return a copy of all flies in this Country with fields copied over.
+func CopyCountry(currentCountry Country) Country {
+	var newCountry Country
+	newCountry.width = currentCountry.width
+
+	// copy flies over
+	numFlies := len(currentCountry.flies)
+	newCountry.flies = make([]Fly, numFlies)
+
+	//copy every fly's field in the new Country
+	for i := range newCountry.flies {
+
+		newCountry.flies[i] = CopyFly(currentCountry.flies[i])
+
+	}
+	return newCountry
+
+}
+
+// CopyFly takes Fly object and return an a Fly with all field of input object
+func CopyFly(oldFly Fly) Fly {
+	var newFly Fly
+
+	//copy ordered pair
+	newFly.position.x = oldFly.position.x
+	newFly.position.y = oldFly.position.y
+	newFly.velocity.y = oldFly.velocity.y
+	newFly.acceleration.y = oldFly.acceleration.y
+	newFly.stage = oldFly.stage
+
+	return newFly
+
+}
+
+// TODO: no need this
+// UpdateAccel takes a universe object and a Fly int hat universe.
+// Returns the net acceleration due to the force of gravity of the Fly (in componets) computed overall flies in the universe.
+func UpdateAccel(currentCountry Country, f Fly) OrderedPair {
+	var accel OrderedPair
+	// randomly
+
+	//Split acceleration based on force
+	accel.x = force.x
+	accel.y = force.y
+
+	return accel
+}
+
+// UpdateVelocity take a Fly and a float time
+// Uses components in that Fly estimates over time secs
+func UpdateVelocity(f Fly, time float64) OrderedPair {
+	var vel OrderedPair
+
+	vel.x = f.velocity.x + f.acceleration.x*time
+	vel.y = f.velocity.y + f.acceleration.y*time
+
+	return vel
+}
+
+// Updatepositon take a Fly and a float time
+// Uses components in that Fly estimates over time secs
+func UpdatePosition(f Fly, time float64) OrderedPair {
+	var pos OrderedPair
+
+	pos.x = f.position.x + f.velocity.x*time + 0.5*f.acceleration.x*time*time
+	pos.y = f.position.y + f.velocity.y*time + 0.5*f.acceleration.y*time*time
+
+	return pos
 }
