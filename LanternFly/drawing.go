@@ -5,15 +5,11 @@ import (
 	"image"
 )
 
-//place your drawing code here.
-
-// let's place our drawing functions here.
-
-//AnimateSystem takes a slice of Sky objects along with a canvas width
-//parameter and generates a slice of images corresponding to drawing each Sky
+//AnimateSystem takes a slice of Country objects along with a canvas width
+//parameter and generates a slice of images corresponding to drawing each Country
 //on a canvasWidth x canvasWidth canvas
 
-// Drawing Sky slice if it s divisible by drawing frequency
+// Drawing Country slice if it is divisible by drawing frequency
 func AnimateSystem(timePoints []Country, canvasWidth, drawingFrequency int) []image.Image {
 	images := make([]image.Image, 0)
 
@@ -26,28 +22,19 @@ func AnimateSystem(timePoints []Country, canvasWidth, drawingFrequency int) []im
 }
 
 // GetFlyColor returns the color for a fly based on its stage
-func GetFlyColor(stage int, isAlive bool) canvas.Color {
-	if !isAlive {
+func GetFlyColor(fly Fly) canvas.Color {
+	if !fly.isAlive {
 		return canvas.MakeColor(0, 0, 0) // Black for dead flies
 	}
 
-	// Add color based on the fly's stage
-	switch stage {
-	case 0:
-		return canvas.MakeColor(255, 0, 0) // Red for egg
-	case 1:
-		return canvas.MakeColor(255, 165, 0) // Orange for instar1
-	case 2:
-		return canvas.MakeColor(255, 255, 0) // Yellow for instar2
-	case 3:
-		return canvas.MakeColor(0, 255, 0) // Green for instar3
-	case 4:
-		return canvas.MakeColor(0, 0, 255) // Blue for instar4
-	case 5:
-		return canvas.MakeColor(128, 0, 128) // Purple for adult
-	default:
-		return canvas.MakeColor(255, 255, 255) // White for unknown stage
-	}
+	// Use SorttheFlies to get the color based on the fly's stage
+	sortedFly := SorttheFlies(fly)
+
+	return canvas.MakeColor(
+		sortedFly.color.red,
+		sortedFly.color.green,
+		sortedFly.color.blue,
+	)
 }
 
 // DrawToCanvas generates the image corresponding to a canvas after drawing a Quadrant
@@ -64,7 +51,7 @@ func DrawToCanvas(country Country, canvasWidth int) image.Image {
 	// range over all the flies and draw them.
 	for _, fly := range country.Fly {
 		// Get the color based on the fly's stage and alive status
-		color := GetFlyColor(fly.Stage, fly.isAlive)
+		color := GetFlyColor(fly)
 
 		// Set the fly color
 		c.SetFillColor(color)

@@ -3,16 +3,12 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"gifhelper"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/gif"
-	"math"
 	"math/rand"
-	"net/http"
 	"os"
-	"strconv"
 
 	"github.com/nfnt/resize"
 	"github.com/oliamb/cutter"
@@ -82,48 +78,6 @@ func main() {
 		}
 	}
 
-	file, err := os.Open("tree.csv")
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
-	}
-	defer file.Close()
-
-	// Create a CSV reader
-	reader := csv.NewReader(file)
-
-	// Read the file
-	records, err := reader.ReadAll()
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-
-	// Skip the header row and process the data
-	habitats := make([]OrderedPair, 0)
-	for i, record := range records {
-		if i == 0 { // Skip header
-			continue
-		}
-
-		// Parse longitude
-		longitude, err := strconv.ParseFloat(record[0], 64) // Assuming longitude is in the first column
-		if err != nil {
-			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
-			continue
-		}
-
-		// Parse latitude
-		latitude, err := strconv.ParseFloat(record[1], 64) // Assuming latitude is in the second column
-		if err != nil {
-			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
-			continue
-		}
-
-		// Append the habitat to the slice
-		habitats = append(habitats, OrderedPair{Longitude: longitude, Latitude: latitude})
-	}
-
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
 }
 
@@ -144,90 +98,78 @@ func initializeBoids(numBoids int, initialSpeed float64, skyWidth float64) []Boi
 		boids[i].Position.Y = rand.Float64() * skyWidth
 	}
 
-	return boids
+	return coordinates, nil
 }
 
-// Vector represents a 2D vector with X and Y components.
-type Vector struct {
-	X, Y float64
-}
+// CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
+func CreateInitialHabitat(coordinates []Coordinate) Country {
+	country := Country{}  // Create the initial country.
+	country.width = 100.0 // Set a default width, you can adjust this value as needed
 
-// randomUnitVector generates a random unit vector.
-func randomUnitVector() Vector {
-	// Generate a random angle between 0 and 2π (360 degrees)
-	angle := rand.Float64() * 2 * math.Pi
+	// Initialize the flies based on the provided coordinates
+	numFlies := len(coordinates)
+	country.flies = make([]Fly, numFlies)
 
-	// Calculate the X and Y components of the unit vector
-	x := math.Cos(angle)
-	y := math.Sin(angle)
+	for i, coord := range coordinates {
+		// Use coordinates to set the initial position of flies
+		country.flies[i].position.x = coord.Longitude
+		country.flies[i].position.y = coord.Latitude
 
-	// Create and return the unit vector
-	return Vector{X: x, Y: y}
-}
+		// Velocity and acceleration are random since no data is available
+		country.flies[i].velocity.x = rand.Float64() * 2
+		country.flies[i].velocity.y = rand.Float64() * 5
+		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 2
+		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 5
 
-// uploadHandler handles the HTTP requests to the root ("/") URL.
-// It serves two main purposes:
-//  1. If the request method is POST, it processes the uploaded image,
-//     resizes it, pastes it onto a white background, and creates a GIF file.
-//  2. If the request method is GET, it displays an HTML form allowing users
-//     to upload an image.
-func uploadHandler(w http.ResponseWriter, r *http.Request) {
-	// Check if the request method is POST
-	if r.Method == http.MethodPost {
-		// Retrieve the uploaded file from the request
-		file, _, err := r.FormFile("image")
-		if err != nil {
-			http.Error(w, "Error reading file", http.StatusBadRequest)
-			return
-		}
-		defer file.Close()
+		// Lantern fly's stage random from 1-4
+		country.flies[i].stage = rand.Intn(4) + 1
 
-		// Decode the uploaded image
-		img, _, err := image.Decode(file)
-		if err != nil {
-			http.Error(w, "Error decoding image", http.StatusInternalServerError)
-			return
+		// Initialize the energy of flies based on their stage
+		switch country.flies[i].stage {
+		case 1: // egg
+			country.flies[i].energy = rand.Float64() * 39.5
+		case 2: // nymph1
+			country.flies[i].energy = rand.Float64() * 250
+		case 3: // nymph2
+			country.flies[i].energy = rand.Float64() * 108.7
+		case 4: // adult
+			country.flies[i].energy = rand.Float64() * 180
 		}
 
-		// Resize the image to a smaller size (you can adjust the width and height)
-		resizedImg := resize.Resize(200, 0, img, resize.Lanczos3)
+		// When initialized, consider all flies are alive
+		country.flies[i].isAlive = true
 
-		// Create a new image with a white background
-		gifImg := image.NewRGBA(image.Rect(0, 0, resizedImg.Bounds().Dx(), resizedImg.Bounds().Dy()))
-		draw.Draw(gifImg, gifImg.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
-
-		// Paste the resized image onto the white background
-		cutterImg, err := cutter.Crop(resizedImg, cutter.Config{
-			Width:  gifImg.Bounds().Dx(),
-			Height: gifImg.Bounds().Dy(),
-			Mode:   cutter.Centered,
-		})
-		if err != nil {
-			http.Error(w, "Error cropping image", http.StatusInternalServerError)
-			return
-		}
-		draw.Draw(gifImg, gifImg.Bounds(), cutterImg, image.Point{}, draw.Over)
-
-		// Create a GIF file
-		outFile, err := os.Create("output.gif")
-		if err != nil {
-			http.Error(w, "Error creating output file", http.StatusInternalServerError)
-			return
-		}
-		defer outFile.Close()
-
-		// Encode the GIF
-		err = gif.Encode(outFile, gifImg, nil)
-		if err != nil {
-			http.Error(w, "Error encoding GIF", http.StatusInternalServerError)
-			return
-		}
-
-		// Respond to the client with a success message
-		fmt.Fprintln(w, "GIF created successfully")
-	} else {
-		// Display the HTML form to upload an image
-		form := `<html><body><form action="/" method="post" enctype="multipart/form-data"><input type="file" name="image"><input type="submit" value="Upload"></form></body></html>`
-		w.Write([]byte(form))
+		// LocationID is random from 0-24
+		country.flies[i].locationID = rand.Intn(25) // Get data from file, can be changed later
 	}
+
+	return country
+}
+
+// SaveGIF saves a sequence of images as a GIF file
+func SaveGIF(images []image.Image, filename string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Set up the GIF header
+	gifWriter := gif.GIF{}
+	for _, img := range images {
+		// Convert each image to a paletted image for GIF encoding
+		palettedImg := image.NewPaletted(img.Bounds(), color.Palette{color.White, color.Black})
+		draw.Draw(palettedImg, palettedImg.Bounds(), img, image.Point{}, draw.Over)
+
+		gifWriter.Image = append(gifWriter.Image, palettedImg)
+		gifWriter.Delay = append(gifWriter.Delay, 0) // No delay between frames (change if needed)
+	}
+
+	// Encode the GIF and write to the file
+	err = gif.EncodeAll(file, &gifWriter)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
