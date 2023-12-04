@@ -19,6 +19,14 @@ type Fly struct {
 	color      Color // color to show on scatter plot (red, orange, yellow, green, blue, purple, black) neon colors
 
 }
+
+
+type Weather struct {
+	x         float64 // Bottom left corner x coordinate (Longitude)
+	y         float64 // Bottom left corner y coordinate (Latitude)
+	Quadrants []Quadrant
+}
+
 type Color struct {
 	red   uint8
 	blue  uint8
@@ -78,8 +86,11 @@ const (
 
 	earthRadius float64 = 6371 // km
 
-	minLat float64 = 24.396308  // Southernmost point in the US
-	maxLat float64 = 49.384358  // Northernmost point in the contiguous US
-	minLon float64 = -125.00165 // Westernmost point in the contiguous US
-	maxLon float64 = -66.93457  // Easternmost point in the contiguous US
+
+	minLat float64 = 31.33   // Southernmost point in the US
+	maxLat float64 = 45.71   // Northernmost point in the contiguous US
+	minLon float64 = -123.27 // Westernmost point in the contiguous US
+	maxLon float64 = -68.93  // Easternmost point in the contiguous US
+
+
 )
