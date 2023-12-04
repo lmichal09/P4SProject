@@ -6,8 +6,10 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 const G = 6.67408e-11
@@ -145,7 +147,8 @@ func UpdateCountry(currCountry Country) Country {
 
 	return newCountry
 }
-func ReadTrees() []OrderedPair{
+
+func ReadTrees() []OrderedPair {
 	var habitats []OrderedPair
 	for i, record := range records {
 		if i == 0 { // Skip header
@@ -171,6 +174,7 @@ func ReadTrees() []OrderedPair{
 	}
 	return habitats
 }
+
 func GetTreePositions(country Country) []OrderedPair {
 	treePositions := make([]OrderedPair, len(country.trees))
 
