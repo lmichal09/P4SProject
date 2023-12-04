@@ -1,10 +1,14 @@
 package main
 
+
 type Country struct {
-	width      float64
-	height     float64
-	flies      []Fly
-	population int
+	width float64
+	flies []Fly
+	trees []Tree
+}
+
+type Tree struct {
+	position OrderedPair
 }
 
 type Fly struct {
@@ -56,11 +60,6 @@ type Quadrant struct {
 	temp  float64
 }
 
-// Coordinate represents geographical coordinates with latitude and longitude.
-type Coordinate struct {
-	Latitude  float64
-	Longitude float64
-}
 
 const (
 	instar1To2Threshold     float64 = 166.6
