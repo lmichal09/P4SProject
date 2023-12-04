@@ -52,6 +52,24 @@ type Quadrant struct {
 	temp  float64
 }
 
+// SampleData represents the structure of the data in the file
+type SampleData struct {
+	Source           string
+	Year             int
+	BioYear          int
+	Latitude         float64
+	Longitude        float64
+	State            string
+	LydePresent      bool
+	LydeEstablished  bool
+	LydeDensity      string
+	SourceAgency     string
+	CollectionMethod string
+	PointID          string
+	RoundedLongitude float64
+	RoundedLatitude  float64
+}
+
 const (
 	instar1To2Threshold     float64 = 166.6
 	instar2To3Threshold     float64 = 208.7
