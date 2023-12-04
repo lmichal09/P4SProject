@@ -517,13 +517,24 @@ func CopyCountry(currentCountry Country) Country {
 func CopyFly(oldFly Fly) Fly {
 	var newFly Fly
 
-	//copy ordered pair
+	// copy ordered pair
 	newFly.position.x = oldFly.position.x
 	newFly.position.y = oldFly.position.y
+	newFly.velocity.x = oldFly.velocity.x
 	newFly.velocity.y = oldFly.velocity.y
+	newFly.acceleration.x = oldFly.acceleration.x
 	newFly.acceleration.y = oldFly.acceleration.y
+
+	// copy other fields
 	newFly.stage = oldFly.stage
+	newFly.energy = oldFly.energy
+	newFly.isAlive = oldFly.isAlive
+	newFly.locationID = oldFly.locationID
+
+	// copy color
+	newFly.color.red = oldFly.color.red
+	newFly.color.blue = oldFly.color.blue
+	newFly.color.green = oldFly.color.green
 
 	return newFly
-
 }
