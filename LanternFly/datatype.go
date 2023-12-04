@@ -2,6 +2,7 @@ package main
 
 type Country struct {
 	width      float64
+	height     float64
 	flies      []Fly
 	population int
 }
