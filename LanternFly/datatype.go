@@ -12,17 +12,13 @@ type Fly struct {
 	energy                           float64 // Degree-days
 	isAlive                          bool
 	locationID                       int
-<<<<<<< HEAD
 	color                            Color // color to show on scatter plot (red, orange, yellow, green, blue, purple, black) neon colors
 
 }
 type Color struct {
-	red   uint
-	blue  uint
-	green uint
-=======
-	color                            uint
->>>>>>> e9ed7fc64d35fb99f16173c57d33dd1844276575
+	red   uint8
+	blue  uint8
+	green uint8
 }
 
 type stage struct {
