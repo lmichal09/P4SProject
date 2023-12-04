@@ -162,7 +162,7 @@ func ComputeDegreeDay(fly *Fly, quadrants []Quadrant) float64 {
 	quadrantID := GetQuadrant(fly, quadrants)
 
 	// get the temperature of the quadrant
-	temperature := GetTemperature(quadrantID, quadrants) // TODO: this is the max temp?
+	temperature := GetTemperature(quadrantID, quadrants)
 
 	// get the base temperature base on the fly's stage
 	baseTemp := GetBaseTemp(fly.stage)
@@ -204,11 +204,8 @@ func UpdateLifeStage(fly *Fly) int {
 		panic("invalid life stage")
 	}
 
-	// TODO: hatch
-	// TODO: must survive according to a factor of egg viability & must accumulate a certain number of degree-days to molt to the next stage
-
 	// Required GDD for each stage. 1: 166.6, 208.7, 410.5, 620
-	if fly.energy >= 0 && fly.energy < 166.6 {
+	if fly.energy >= 50 && fly.energy < 166.6 {
 		stage = 1
 	} else if fly.energy >= instar1To2Threshold && fly.energy < instar2To3Threshold {
 		stage = 2
@@ -218,7 +215,7 @@ func UpdateLifeStage(fly *Fly) int {
 		stage = 4
 	} else if fly.energy >= instar4ToAdultThreshold {
 		stage = 5
-	} else { // TODO: adult to die
+	} else if fly.energy > adultToDieThreshold {
 		stage = 6 // dead
 	}
 
@@ -258,28 +255,29 @@ func ComputeMortality(fly *Fly) bool {
 func ComputeFecundity(fly Fly) []Fly {
 	newFly := make([]Fly, 0)
 
-	// TODO: probability of laying eggs 10.5%
+	// Probability of laying eggs 10.5%
+	if rand.Float64() <= 0.105 {
+		// randomly choose the number of egg masses
+		numEggMasses := rand.Intn(2) + 1
 
-	// randomly choose the number of egg masses
-	numEggMasses := rand.Intn(2) + 1
+		// randomly choose the number of eggs in each egg mass
+		numEggs := rand.Intn(30) + 30
 
-	// randomly choose the number of eggs in each egg mass
-	numEggs := rand.Intn(30) + 30
+		totalEggs := numEggMasses * numEggs
 
-	totalEggs := numEggMasses * numEggs
-
-	// location of the eggs is the location of the adult
-	for i := 0; i < totalEggs; i++ {
-		newEgg := Fly{
-			position: OrderedPair{
-				x: fly.position.x,
-				y: fly.position.y,
-			},
-			stage:   0,
-			energy:  0,
-			isAlive: true,
+		// location of the eggs is the location of the adult
+		for i := 0; i < totalEggs; i++ {
+			newEgg := Fly{
+				position: OrderedPair{
+					x: fly.position.x,
+					y: fly.position.y,
+				},
+				stage:   0,
+				energy:  0,
+				isAlive: true,
+			}
+			newFly = append(newFly, newEgg)
 		}
-		newFly = append(newFly, newEgg)
 	}
 
 	return newFly
@@ -299,7 +297,7 @@ func ComputeMovement(fly *Fly, trees []OrderedPair) OrderedPair {
 
 // RandomMovement updates the position of adult flies based on random movement
 func RandomMovement(fly *Fly) OrderedPair {
-	maxDistance := 0.0 // TODO: max distance
+	maxDistance := 5.0 // TODO: max distance
 
 	// possibility of flies carried by human
 	if rand.Float64() < 0.1 {

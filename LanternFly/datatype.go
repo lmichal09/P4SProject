@@ -67,8 +67,7 @@ const (
 	instar2To3Threshold     float64 = 208.7
 	instar3To4Threshold     float64 = 410.5
 	instar4ToAdultThreshold float64 = 620
-	// TODO: adult to die
-	//lowerTempThreshold float64 =
+	adultToDieThreshold     float64 = 1240
 
 	// survival rate: 1: 0.6488, 2: 0.9087, 3: 0.8948, 4: 0.822
 	sRI1 float64 = 0.6488
