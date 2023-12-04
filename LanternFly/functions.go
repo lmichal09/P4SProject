@@ -458,9 +458,23 @@ func GetQuadrant(fly *Fly, quadrants []Quadrant) int {
 	}
 
 	// if the fly is out of bounds, panic
-	// TODO: panic("fly is out of simulation bounds")
+	// Check if the fly is within bounds
+	if !InBounds(fly, quadrants) {
+		panic("fly is out of simulation bounds")
+	}
 
 	return quadrant // Placeholder
+}
+
+// InBounds checks if the fly is within the simulation bounds.
+func InBounds(fly *Fly, quadrants []Quadrant) bool {
+	for _, q := range quadrants {
+		if fly.position.x >= q.x && fly.position.x <= q.x+q.width &&
+			fly.position.y >= q.y && fly.position.y <= q.y+q.width {
+			return true
+		}
+	}
+	return false
 }
 
 // GetTemperature returns the temperature of the quadrant.
