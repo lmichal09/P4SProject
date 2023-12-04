@@ -6,10 +6,8 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
-	"strconv"
 )
 
 const G = 6.67408e-11
@@ -100,19 +98,19 @@ func UpdateCountry(currCountry Country) Country {
 	// TODO: get weather data
 
 	// get tree data
-	trees = currCountry.trees
+	trees = GetTreePositions(currCountry)
 
 	// loop through days
 	for i := 0; ; i++ {
 		// keep looping until all flies are dead, except for eggs
-		if CheckDead(newCountry.flies) {
+		if CheckDead(currCountry.flies) {
 			break
 		}
 
 		// loop through flies
-		for j := 0; j < len(newCountry.flies); j++ {
+		for j := 0; j < len(currCountry.flies); j++ {
 			// compute degree days
-			newCountry.flies[j].energy += ComputeDegreeDay(&newCountry.flies[j], weather)
+			newCountry.flies[j].energy += ComputeDegreeDay(&currCountry.flies[j], weather)
 
 			// update life stage
 			newCountry.flies[j].stage = UpdateLifeStage(&newCountry.flies[j])
@@ -132,13 +130,11 @@ func UpdateCountry(currCountry Country) Country {
 	}
 
 	// remove all dead flies
-	var aliveFlies []Fly
 	for i := 0; i < len(newCountry.flies); i++ {
-		if newCountry.flies[i].isAlive {
-			aliveFlies = append(aliveFlies, newCountry.flies[i])
+		if !newCountry.flies[i].isAlive {
+			newCountry.flies = append(newCountry.flies[:i], newCountry.flies[i+1:]...)
 		}
 	}
-	newCountry.flies = aliveFlies
 
 	if len(totalNewEggs) > 0 {
 		panic("something's wrong")
@@ -148,6 +144,16 @@ func UpdateCountry(currCountry Country) Country {
 	newCountry.flies = append(newCountry.flies, totalNewEggs...)
 
 	return newCountry
+}
+
+func GetTreePositions(country Country) []OrderedPair {
+	treePositions := make([]OrderedPair, len(country.trees))
+
+	for i, tree := range country.trees {
+		treePositions[i] = tree.position
+	}
+
+	return treePositions
 }
 
 // ComputeDegreeDay calculates the degree days for a single day.
@@ -188,32 +194,6 @@ func GetBaseTemp(stage int) float64 {
 	}
 
 	return temp
-}
-func ReadTrees() []OrderedPair {
-	var habitats []OrderedPair
-	for i, record := range records {
-		if i == 0 { // Skip header
-			continue
-		}
-
-		// Parse longitude
-		longitude, err := strconv.ParseFloat(record[0], 64) // Assuming longitude is in the first column
-		if err != nil {
-			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
-			continue
-		}
-
-		// Parse latitude
-		latitude, err := strconv.ParseFloat(record[1], 64) // Assuming latitude is in the second column
-		if err != nil {
-			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
-			continue
-		}
-
-		// Append the habitat to the slice
-		habitats = append(habitats, OrderedPair{x: longitude, y: latitude})
-	}
-	return habitats
 }
 
 // UpdateLifeStage() updates the life stage of flies based on the cumulative degree-days (CDD)
@@ -529,45 +509,29 @@ func CopyCountry(currentCountry Country) Country {
 	var newCountry Country
 	newCountry.width = currentCountry.width
 
-	// Copy flies over
+	// copy flies over
 	numFlies := len(currentCountry.flies)
 	newCountry.flies = make([]Fly, numFlies)
+
+	//copy every fly's field in the new Country
 	for i := range newCountry.flies {
+
 		newCountry.flies[i] = CopyFly(currentCountry.flies[i])
-	}
 
-	// Copy trees over
-	numTrees := len(currentCountry.trees)
-	newCountry.trees = make([]Tree, numTrees)
-	for i := range newCountry.trees {
-		newCountry.trees[i] = CopyTree(currentCountry.trees[i])
 	}
-
 	return newCountry
+
 }
 
 // CopyFly takes Fly object and return an a Fly with all field of input object
 func CopyFly(oldFly Fly) Fly {
 	var newFly Fly
 
-	// copy ordered pair
+	//copy ordered pair
 	newFly.position.x = oldFly.position.x
 	newFly.position.y = oldFly.position.y
-	newFly.velocity.x = oldFly.velocity.x
-	newFly.velocity.y = oldFly.velocity.y
-	newFly.acceleration.x = oldFly.acceleration.x
-	newFly.acceleration.y = oldFly.acceleration.y
-
-	// copy other fields
 	newFly.stage = oldFly.stage
-	newFly.energy = oldFly.energy
-	newFly.isAlive = oldFly.isAlive
-	newFly.locationID = oldFly.locationID
-
-	// copy color
-	newFly.color.red = oldFly.color.red
-	newFly.color.blue = oldFly.color.blue
-	newFly.color.green = oldFly.color.green
 
 	return newFly
+
 }
