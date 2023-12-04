@@ -10,24 +10,6 @@ import (
 	"strings"
 )
 
-// SampleData represents the structure of the data in the file
-type SampleData struct {
-	Source           string
-	Year             int
-	BioYear          int
-	Latitude         float64
-	Longitude        float64
-	State            string
-	LydePresent      bool
-	LydeEstablished  bool
-	LydeDensity      string
-	SourceAgency     string
-	CollectionMethod string
-	PointID          string
-	RoundedLongitude float64
-	RoundedLatitude  float64
-}
-
 // ReadSamplesFromDirectory reads a collection of files from a given directory
 // and returns a map where the keys are sample names and the values are slices of SampleData.
 func ReadSamplesFromDirectory(directory string) map[string][]SampleData {
