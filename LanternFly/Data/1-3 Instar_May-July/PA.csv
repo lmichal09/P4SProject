@@ -1,0 +1,13 @@
+Pennsylvania May-July Maximum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202107,77,-0.4
+,,
+Pennsylvania May-July Minimum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202107,54.2,0

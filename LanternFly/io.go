@@ -39,13 +39,17 @@ func ReadSamplesFromDirectory(directory string) map[string][]SampleData {
 	}
 
 	for _, fileData := range dirContents {
-		// Extract sample name from file name
-		fileName := fileData.Name()
-		sampleName := strings.Replace(fileName, ".txt", "", 1)
+		// Construct the full file path
+		filePath := filepath.Join(directory, fileData.Name())
 
-		// Read data from file and store in the result map
-		data := ReadSampleDataFromFile(filepath.Join(directory, fileName))
-		allData[sampleName] = data
+		// Read data from file
+		data := ReadSampleDataFromFile(filePath)
+
+		// Use PointID as the key for the map
+		for _, sample := range data {
+			key := sample.PointID
+			allData[key] = append(allData[key], sample)
+		}
 	}
 
 	return allData
