@@ -12,6 +12,7 @@ type Fly struct {
 	energy                           float64 // Degree-days
 	isAlive                          bool
 	locationID                       int
+	color                            uint
 }
 
 type stage struct {
