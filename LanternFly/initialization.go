@@ -30,35 +30,6 @@ The life cycle of the lanternfly is as follows: 6 stages 0-5, stage 7: Dead
 
 // width and population need to be read from file
 
-type Quadrants struct {
-	x         float64 // Bottom left corner x coordinate (Longitude)
-	y         float64 // Bottom left corner y coordinate (Latitude)
-	Quadrants []Quadrant
-}
-
-const (
-	instar1To2Threshold     float64 = 166.6
-	instar2To3Threshold     float64 = 208.7
-	instar3To4Threshold     float64 = 410.5
-	instar4ToAdultThreshold float64 = 620
-	// TODO: adult to die
-	//lowerTempThreshold float64 =
-
-	// survival rate: 1: 0.6488, 2: 0.9087, 3: 0.8948, 4: 0.822
-	sRI1 float64 = 0.6488
-	sRI2 float64 = 0.9087
-	sRI3 float64 = 0.8948
-	sRI4 float64 = 0.822
-	sRA  float64 = 0.5837
-
-	earthRadius float64 = 6371 // km
-
-	minLat float64 = 24.396308  // Southernmost point in the US
-	maxLat float64 = 49.384358  // Northernmost point in the contiguous US
-	minLon float64 = -125.00165 // Westernmost point in the contiguous US
-	maxLon float64 = -66.93457  // Easternmost point in the contiguous US
-)
-
 func parseInteger(s string) (int, error) {
 	val, err := strconv.Atoi(s)
 	if err != nil {
