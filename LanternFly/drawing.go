@@ -28,14 +28,22 @@ func GetFlyColor(fly Fly) color.Color {
 		return canvas.MakeColor(0, 0, 0) // Black for dead flies
 	}
 
-	// Use SorttheFlies to get the color based on the fly's stage
-	sortedFly := SorttheFlies(fly)
-
-	return canvas.MakeColor(
-		sortedFly.color.red,
-		sortedFly.color.green,
-		sortedFly.color.blue,
-	)
+	switch fly.stage {
+	case 0:
+		return canvas.MakeColor(255, 0, 0) // Red for egg
+	case 1:
+		return canvas.MakeColor(255, 165, 0) // Orange for instar1
+	case 2:
+		return canvas.MakeColor(255, 255, 0) // Yellow for instar2
+	case 3:
+		return canvas.MakeColor(0, 128, 0) // Green for instar3
+	case 4:
+		return canvas.MakeColor(0, 0, 255) // Blue for instar4
+	case 5:
+		return canvas.MakeColor(128, 0, 128) // Purple for adult
+	default:
+		return canvas.MakeColor(0, 0, 0) // Black for unknown stage
+	}
 }
 
 // DrawToCanvas generates the image corresponding to a canvas after drawing a Quadrant
@@ -57,8 +65,8 @@ func DrawToCanvas(country Country, canvasWidth int) image.Image {
 		// Set the fly color
 		c.SetFillColor(color)
 
-		cx := (fly.position.x / country.width) * float64(canvasWidth)
-		cy := (fly.position.x / country.width) * float64(canvasWidth)
+		cx := (fly.position.x / float64(country.width)) * float64(canvasWidth)
+		cy := (fly.position.y / float64(country.width)) * float64(canvasWidth)
 		r := 5
 		c.Circle(cx, cy, float64(r))
 		c.Fill()
