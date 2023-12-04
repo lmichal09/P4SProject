@@ -12,18 +12,20 @@ import (
 	"strconv"
 )
 
+// BUG: everything in io.go is commented out
+
 func main() {
 	fmt.Println("Lantern Flies simulation!")
 	// step 1: reading input from a single file.
 
 	filename := "Data/lydetext.txt"
-	allData := ReadSamplesFromDirectory(filename)
+	allData := ReadSamplesFromDirectory(filename) // BUG: ReadSamplesFromDirectory is commented out so this is undefined
 
 	//step 2: reading input from a directory
 
 	for sampleName, data := range allData {
 		csvFilename := sampleName + ".csv"
-		err := WriteToFile(csvFilename, data)
+		err := WriteToFile(csvFilename, data) // BUG: WriteToFile is commented out so this is undefined
 		if err != nil {
 			fmt.Printf("Error writing to file %s: %v\n", csvFilename, err)
 		} else {

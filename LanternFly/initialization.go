@@ -240,7 +240,7 @@ func LoadWeatherData(directory string) (map[string]OrderedPair, error) {
 }
 
 // InitializeQuadrants creates a 5x5 grid of Quadrants
-func InitializeQuadrants() Quadrants {
+func InitializeQuadrants() Quadrant {
 	totalWidth := maxLon - minLon
 	totalHeight := maxLon - minLon
 
@@ -313,10 +313,10 @@ func InitializeQuadrants() Quadrants {
 	quadrants[23].temp += FareinheitToCelsius(weatherData["RI"].x)
 	quadrants[24].temp += FareinheitToCelsius(weatherData["KS"].x)
 
-	return Quadrants{
+	return Quadrant{
 		x:         minLon,
 		y:         minLat,
-		Quadrants: quadrants,
+		Quadrants: quadrants, // BUG: unknown field Quadrant in struct literal of type Quadrant
 	}
 }
 
@@ -394,13 +394,10 @@ func InitializeCountry() Country {
 	for i := 0; i < numberOfFlies; i++ {
 		country.flies[i].position.x = flies[i].RoundedLongitude
 		country.flies[i].position.y = flies[i].RoundedLatitude
-		country.flies[i].velocity.x = rand.Float64() * 0.1
-		country.flies[i].velocity.y = rand.Float64() * 0.2
-		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 0.1
-		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 0.2
 		country.flies[i].stage = 0
 		country.flies[i].isAlive = true
-
+		// BUG: i remove velocity and acceleration
+		// BUG: energy?
 	}
 
 	// Add Location ID:
