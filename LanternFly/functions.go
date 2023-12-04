@@ -105,14 +105,14 @@ func UpdateCountry(currCountry Country) Country {
 	// loop through days
 	for i := 0; ; i++ {
 		// keep looping until all flies are dead, except for eggs
-		if CheckDead(currCountry.flies) {
+		if CheckDead(newCountry.flies) {
 			break
 		}
 
 		// loop through flies
-		for j := 0; j < len(currCountry.flies); j++ {
+		for j := 0; j < len(newCountry.flies); j++ {
 			// compute degree days
-			newCountry.flies[j].energy += ComputeDegreeDay(&currCountry.flies[j], weather)
+			newCountry.flies[j].energy += ComputeDegreeDay(&newCountry.flies[j], weather)
 
 			// update life stage
 			newCountry.flies[j].stage = UpdateLifeStage(&newCountry.flies[j])
@@ -132,11 +132,13 @@ func UpdateCountry(currCountry Country) Country {
 	}
 
 	// remove all dead flies
+	var aliveFlies []Fly
 	for i := 0; i < len(newCountry.flies); i++ {
-		if !newCountry.flies[i].isAlive {
-			newCountry.flies = append(newCountry.flies[:i], newCountry.flies[i+1:]...)
+		if newCountry.flies[i].isAlive {
+			aliveFlies = append(aliveFlies, newCountry.flies[i])
 		}
 	}
+	newCountry.flies = aliveFlies
 
 	if len(totalNewEggs) > 0 {
 		panic("something's wrong")
