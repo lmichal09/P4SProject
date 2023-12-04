@@ -189,103 +189,170 @@ func InitializeQuadrants() Quadrants {
 	}
 }
 
+func InitializeCountry(numberOfFlies, numberOfTree) Country {
+	var country Country
+	country.width = maxLon - minLon
+	country.flies = make([]Fly, numberOfFlies)
+	country.trees = make([]Tree, numberOfTree)
+
+	// Initialize flies
+	for i := 0; i < numberOfFlies; i++ {
+		country.flies[i].position.x = 
+		country.flies[i].position.y = 
+		country.flies[i].velocity.x = rand.Float64()* 0.1
+		country.flies[i].velocity.y = rand.Float64()* 0.2
+		country.flies[i].acceleration.x = rand.Float64()* rand.Float64() * 0.1
+		country.flies[i].acceleration.y = rand.Float64()* rand.Float64() * 0.2
+		country.flies[i].stage = 0
+		country.flies[i].isAlive = true
+		
+	}
+
+	// Add Location ID: 
+	for i := 0; i < numberOfFlies; i++ {
+		if country.flies[i].position.x < -123.270000 & country.flies[i].position.y < 31.330000 {
+			country.flies[i].locationID = 1
+		} else if country.flies[i].position.x < -112.402000 & country.flies[i].position.y < 31.330000 {
+			country.flies[i].locationID = 2
+		} else if country.flies[i].position.x < -101.534000 & country.flies[i].position.y < 31.330000 {
+			country.flies[i].locationID = 3
+		} else if country.flies[i].position.x < -90.666000 & country.flies[i].position.y < 31.330000 {
+			country.flies[i].locationID = 4
+		} else if country.flies[i].position.x < -79.798000 & country.flies[i].position.y < 31.330000 {
+			country.flies[i].locationID = 5
+		} else if country.flies[i].position.x < -123.270000 & country.flies[i].position.y < 42.198000 {
+			country.flies[i].locationID = 6
+		} else if country.flies[i].position.x < -112.402000 & country.flies[i].position.y < 42.198000 {
+			country.flies[i].locationID = 7
+		} else if country.flies[i].position.x < -101.534000 & country.flies[i].position.y < 42.198000 {
+			country.flies[i].locationID = 8
+		} else if country.flies[i].position.x < -90.666000 & country.flies[i].position.y < 42.198000 {
+			country.flies[i].locationID = 9
+		} else if country.flies[i].position.x < -79.798000 & country.flies[i].position.y < 42.198000 {
+			country.flies[i].locationID = 10
+		} else if country.flies[i].position.x < -123.270000 & country.flies[i].position.y < 53.066000 {
+			country.flies[i].locationID = 11
+		} else if country.flies[i].position.x < -112.402000 & country.flies[i].position.y < 53.066000 {
+			country.flies[i].locationID = 12
+		} else if country.flies[i].position.x < -101.534000 & country.flies[i].position.y < 53.066000 {
+			country.flies[i].locationID = 13
+		} else if country.flies[i].position.x < -90.666000 & country.flies[i].position.y < 53.066000 {
+			country.flies[i].locationID = 14
+		} else if country.flies[i].position.x < -79.798000 & country.flies[i].position.y < 53.066000 {
+			country.flies[i].locationID = 15
+		} else if country.flies[i].position.x < -123.270000 & country.flies[i].position.y < 63.934000 {
+			country.flies[i].locationID = 16
+		} else if country.flies[i].position.x < -112.402000 & country.flies[i].position.y < 63.934000 {
+			country.flies[i].locationID = 17
+		} else if country.flies[i].position.x < -101.534000 & country.flies[i].position.y < 63.934000 {
+			country.flies[i].locationID = 18
+		} else if country.flies[i].position.x < -90.666000 & country.flies[i].position.y < 63.934000 {
+			country.flies[i].locationID = 19
+		} else if country.flies[i].position.x < -79.798000 & country.flies[i].position.y < 63.934000 {
+			country.flies[i].locationID = 20
+		} else if country.flies[i].position.x < -123.270000 & country.flies[i].position.y < 74.802000 {
+			country.flies[i].locationID = 21
+		} else if country.flies[i].position.x < -112.402000 & country.flies[i].position.y < 74.802000 {
+			country.flies[i].locationID = 22
+		} else if country.flies[i].position.x < -101.534000 & country.flies[i].position.y < 74.802000 {
+			country.flies[i].locationID = 23
+		} else if country.flies[i].position.x < -90.666000 & country.flies[i].position.y < 74.802000 {
+			country.flies[i].locationID = 24
+		} else if country.flies[i].position.x < -79.798000 & country.flies[i].position.y < 74.802000 {
+			country.flies[i].locationID = 25
+		}	
+	}
+	
+
+	weatherData, err := LoadWeatherData("data")
+
+	if err != nil {
+		fmt.Println("Error loading weather data:", err)
+	}
+
+	// Add the energy of flies:
+
+	for i := 0; i < numberOfFlies; i++ {
+		if country.flies[i].locationID == 1 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["OR"].x, weatherData["OR"].y))
+		} else if country.flies[i].locationID == 2 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["CT"].x, weatherData["CT"].y))
+		} else if country.flies[i].locationID == 3 {
+		 	country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["VT"].x, weatherData["VT"].y))
+		} else if country.flies[i].locationID == 4 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["MA"].x, weatherData["MA"].y))
+		} else if country.flies[i].locationID == 5 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["ME"].x, weatherData["ME"].y))
+		} else if country.flies[i].locationID == 6 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["NJ"].x, weatherData["NJ"].y))
+		} else if country.flies[i].locationID == 7 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["NY"].x, weatherData["NY"].y))
+		} else if country.flies[i].locationID == 8 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["PA"].x, weatherData["PA"].y))
+		} else if country.flies[i].locationID == 9 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["MD"].x, weatherData["MD"].y))
+		} else if country.flies[i].locationID == 10 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["DE"].x, weatherData["DE"].y))
+		} else if country.flies[i].locationID == 11 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["WV"].x, weatherData["WV"].y))
+		} else if country.flies[i].locationID == 12 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["VA"].x, weatherData["VA"].y))
+		} else if country.flies[i].locationID == 13 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["NC"].x, weatherData["NC"].y))
+		} else if country.flies[i].locationID == 14 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["DC"].x, weatherData["DC"].y))
+		} else if country.flies[i].locationID == 15 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["SC"].x, weatherData["SC"].y))
+		} else if country.flies[i].locationID == 16 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["NM"].x, weatherData["NM"].y))
+		} else if country.flies[i].locationID == 17 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["MO"].x, weatherData["MO"].y))
+		} else if country.flies[i].locationID == 18 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["IN"].x, weatherData["IN"].y))
+		} else if country.flies[i].locationID == 19 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["OH"].x, weatherData["OH"].y))
+		} else if country.flies[i].locationID == 20 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["MI"].x, weatherData["MI"].y))
+		} else if country.flies[i].locationID == 21 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["AZ"].x, weatherData["AZ"].y))
+		} else if country.flies[i].locationID == 22 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["UT"].x, weatherData["UT"].y))
+		} else if country.flies[i].locationID == 23 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["KY"].x, weatherData["KY"].y))
+		} else if country.flies[i].locationID == 24 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["RI"].x, weatherData["RI"].y))
+		} else if country.flies[i].locationID == 25 {
+			country.flies[i].energy += FareinheitToCelsius(randomInRange(weatherData["KS"].x, weatherData["KS"].y))
+		}
+	}
+
+	// Initialize trees:
+	for i := 0; i < numberOfTree; i++ {
+		country.trees[i].position.x = 
+		country.trees[i].position.y =
+	}
+
+	
+	return country
+}
 
 
+func randomInRange(min, max float64) float64 {
+	rand.Seed(time.Now().UnixNano()) // Initialize the random number generator
+	return min + rand.Float64()*(max-min)
+}
 
-// func InitializeCountry(width float64, population int) Country {
+func main() {
+	quadrants := InitializeQuadrants()
+	for _, quadrant := range quadrants.Quadrants {
+		fmt.Printf("Quadrant ID: %d, Bottom Left (X, Y): (%.6f, %.6f), Width: %.6f, Temp: %.6f\n",
+			quadrant.id, quadrant.x, quadrant.y, quadrant.width, quadrant.temp)
+	}
 
-// 	country := Country{} // Create the initial country.
-// 	country.width = width
-// 	country.flies = make([]Fly, population)
-// 	country.population = population
+}
 
-// 	// Read Weather data and store in a map
-// 	MayJuneWeather := make(map[string]OrderedPair)
-
-// 	// Load from subfolder of Data
-// 	MayJuneWeather = LoadWeatherData("Data/Hatch_May-Jun")
-
-// 	// Initialize the flies.
-// 	for i := range country.flies {
-// 		country.flies[i].position = LoadLatternFlyPosition("latternfly.csv")
-
-// 		// Velocity and acceleration are random since no data is available
-// 		country.flies[i].velocity.x = rand.Float64() * 2
-// 		country.flies[i].velocity.y = rand.Float64() * 5
-// 		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 2
-// 		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 5
-
-// 		//latternfly's stage consider as 0 : egg state
-// 		country.flies[i].stage = 0
-
-// 		// Set Energy to every fly
-// 		// Latternfly's energy is random from its state and weather data from May to June
-// 		// random from minTemp of the state to maxTemp of the state
-// 		// States are sorted by alphabetical order
-// 		// AZ, CT, DC, DE, IN, KS, KY, MA, MD, ME, MI, MO, NC, NJ, NM, NY, OH, OR, PA, RI, SC, UT, VA, VT, WV
-
-// 		if country.flies[i].state == "AZ" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["AZ"].Y, MayJuneWeather["AZ"].X)
-// 		} else if country.flies[i].state == "CT" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["CT"].Y, MayJuneWeather["CT"].X)
-// 		} else if country.flies[i].state == "DC" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["DC"].Y, MayJuneWeather["DC"].X)
-// 		} else if country.flies[i].state == "DE" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["DE"].Y, MayJuneWeather["DE"].X)
-// 		} else if country.flies[i].state == "IN" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["IN"].Y, MayJuneWeather["IN"].X)
-// 		} else if country.flies[i].state == "KS" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["KS"].Y, MayJuneWeather["KS"].X)
-// 		} else if country.flies[i].state == "KY" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["KY"].Y, MayJuneWeather["KY"].X)
-// 		} else if country.flies[i].state == "MA" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["MA"].Y, MayJuneWeather["MA"].X)
-// 		} else if country.flies[i].state == "MD" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["MD"].Y, MayJuneWeather["MD"].X)
-// 		} else if country.flies[i].state == "ME" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["ME"].Y, MayJuneWeather["ME"].X)
-// 		} else if country.flies[i].state == "MI" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["MI"].Y, MayJuneWeather["MI"].X)
-// 		} else if country.flies[i].state == "MO" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["MO"].Y, MayJuneWeather["MO"].X)
-// 		} else if country.flies[i].state == "NC" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["NC"].Y, MayJuneWeather["NC"].X)
-// 		} else if country.flies[i].state == "NJ" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["NJ"].Y, MayJuneWeather["NJ"].X)
-// 		} else if country.flies[i].state == "NM" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["NM"].Y, MayJuneWeather["NM"].X)
-// 		} else if country.flies[i].state == "NY" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["NY"].Y, MayJuneWeather["NY"].X)
-// 		} else if country.flies[i].state == "OH" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["OH"].Y, MayJuneWeather["OH"].X)
-// 		} else if country.flies[i].state == "OR" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["OR"].Y, MayJuneWeather["OR"].X)
-// 		} else if country.flies[i].state == "PA" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["PA"].Y, MayJuneWeather["PA"].X)
-// 		} else if country.flies[i].state == "RI" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["RI"].Y, MayJuneWeather["RI"].X)
-// 		} else if country.flies[i].state == "SC" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["SC"].Y, MayJuneWeather["SC"].X)
-// 		} else if country.flies[i].state == "UT" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["UT"].Y, MayJuneWeather["UT"].X)
-// 		} else if country.flies[i].state == "VA" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["VA"].Y, MayJuneWeather["VA"].X)
-// 		} else if country.flies[i].state == "VT" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["VT"].Y, MayJuneWeather["VT"].X)
-// 		} else if country.flies[i].state == "WV" {
-// 			country.flies[i].energy += randomInRange(MayJuneWeather["WV"].Y, MayJuneWeather["WV"].X)
-// 		}
-// 	}
-// 	//randomly choose 10% of the flies to be alive
-// 	for i := 0; i < population/10; i++ {
-// 		country.flies[rand.Intn(population)].isAlive = true
-// 	}
-// 	return country
-// }
-
-// func randomInRange(min, max float64) float64 {
-// 	rand.Seed(time.Now().UnixNano()) // Initialize the random number generator
-// 	return min + rand.Float64()*(max-min)
-// }
+func FareinheitToCelsius(f float64) float64 {
+	return (f - 32) * 5 / 9
+}
 
 
