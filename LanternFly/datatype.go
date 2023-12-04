@@ -36,12 +36,6 @@ type OrderedPair struct {
 	y float64
 }
 
-// QuadTree simply contains a pointer to the root.
-// Another way of doing this would be type QuadTree *Node
-type QuadTree struct {
-	root *Node
-}
-
 // Node object contains a slice of children (this could just as easily be an array of length 4).
 // A node refers to a star. Sometimes, the star will be a "dummy" star, sometimes it is a star in the
 // universe, and sometimes it is nil. Every internal node points to a dummy star.
