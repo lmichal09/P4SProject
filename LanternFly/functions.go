@@ -20,25 +20,12 @@ func SimulateMigration(initialCountry Country, numYears int) []Country {
 	//range over num of generations and set the i-th country equal to updating the (i-1)th Country
 	for i := 1; i < len(timePoints); i++ {
 		timePoints[i] = UpdateCountry(timePoints[i-1])
-		//TODO: PopulationSize()
+
 	}
 
 	finaltimePoints := SorttheTimePoints(timePoints)
 
 	return finaltimePoints
-}
-
-// Population calculates and returns the population of flies in each state.
-func Population(country *Country) int {
-	totalFlies := 0
-
-	for i := 0; i < len(country.flies); i++ {
-		if country.flies[i].isAlive {
-			totalFlies++
-		}
-	}
-
-	return totalFlies
 }
 
 func SorttheTimePoints(timepoints []Country) []Country {
@@ -106,6 +93,12 @@ func UpdateCountry(currCountry Country) Country {
 
 	// weather
 	var weather []Quadrant
+	var trees []OrderedPair
+
+	// TODO: get weather data
+
+	// get tree data
+	trees = currCountry.trees
 
 	// loop through days
 	for i := 0; ; i++ {
@@ -126,7 +119,7 @@ func UpdateCountry(currCountry Country) Country {
 			newCountry.flies[j].isAlive = ComputeMortality(&newCountry.flies[j])
 
 			// compute movement
-			newCountry.flies[j].position = ComputeMovement(&newCountry.flies[j])
+			newCountry.flies[j].position = ComputeMovement(&newCountry.flies[j], trees)
 
 			// lay eggs
 			if newCountry.flies[j].stage == 5 {
@@ -283,14 +276,14 @@ func ComputeFecundity(fly Fly) []Fly {
 }
 
 // ComputeMovement updates the position of adult flies
-func ComputeMovement(fly *Fly) OrderedPair {
+func ComputeMovement(fly *Fly, trees []OrderedPair) OrderedPair {
 	// TODO: determine the proportion of random vs. directed movement
 	if rand.Float64() < 0.5 {
 		// random movement
 		return RandomMovement(fly)
 	} else {
 		// directed movement
-		return DirectedMovement(fly)
+		return DirectedMovement(fly, trees)
 	}
 }
 
@@ -330,14 +323,47 @@ func LongDistanceMovement(fly *Fly) OrderedPair {
 }
 
 // DirectedMovement updates the position of adult flies based on directed movement
-func DirectedMovement(fly *Fly) OrderedPair {
-	// identify the nearest host tree or a direction with higher concentration of host trees
-	direction := FindHostDirection(fly.position, habitats)
+func DirectedMovement(fly *Fly, trees []OrderedPair) OrderedPair {
+	// find the nearest host tree
+	nearestTree := FindNearestTree(fly.position, trees)
 
-	// move towards the direction, assume a simpler linear movement
-	new := ConvertDistanceToCoordinates(1, direction, fly.position)
+	// get the distance between the fly and the nearest host tree
+	distance := Haversine(fly.position, nearestTree)
+
+	// get the direction of the nearest host tree
+	direction := FindHostDirection(fly.position, nearestTree)
+
+	// calculate the new position
+	new := ConvertDistanceToCoordinates(distance, direction, fly.position)
 
 	return new
+}
+
+func FindNearestTree(flyPosition OrderedPair, trees []OrderedPair) OrderedPair {
+	var nearestTree OrderedPair
+	minDistance := math.MaxFloat64
+
+	for _, tree := range trees {
+		distance := Haversine(flyPosition, tree)
+		if distance < minDistance {
+			minDistance = distance
+			nearestTree = tree
+		}
+	}
+
+	return nearestTree
+}
+
+// FindHostDirection calculates the direction (angle in radians) from fly to the nearest host tree
+func FindHostDirection(flyPosition OrderedPair, nearestTree OrderedPair) float64 {
+	// Calculate the direction from fly to nearest tree
+	dy := nearestTree.y - flyPosition.y
+	dx := nearestTree.x - flyPosition.x
+
+	// Calculate the angle in radians
+	direction := math.Atan2(dy, dx)
+
+	return direction
 }
 
 // ConvertDistanceToCoordinates converts a given distance (in kilometers) and direction (in radians) into new coordinates.
@@ -345,31 +371,6 @@ func ConvertDistanceToCoordinates(distance, direction float64, startingCoordinat
 	newX := startingCoordinates.x + (distance/earthRadius)*(180.0/math.Pi)*math.Cos(direction)
 	newY := startingCoordinates.y + (distance/earthRadius)*(180.0/math.Pi)*math.Sin(direction)
 	return OrderedPair{newX, newY}
-}
-
-func FindHostDirection(position OrderedPair, hostMaps []Coordinate) OrderedPair {
-	minDistance := math.MaxFloat64
-	var nearestTree Coordinate
-
-	// Find the nearest host tree
-	for _, tree := range hostMaps {
-		// calculate distance between position of fly and tree (longtitude, latitude) using Haversine formula
-		distance := Haversine(position, tree)
-		if distance < minDistance {
-			minDistance = distance
-			nearestTree = tree
-		}
-	}
-
-	// TODO: how far can a fly move in one day?
-
-	// Find the direction of the nearest host tree
-	direction := OrderedPair{
-		x: nearestTree.longitude - position.x,
-		y: nearestTree.latitude - position.y,
-	}
-
-	return direction
 }
 
 // Haversine calculates the distance between two points on a sphere
@@ -458,23 +459,11 @@ func GetQuadrant(fly *Fly, quadrants []Quadrant) int {
 	}
 
 	// if the fly is out of bounds, panic
-	// Check if the fly is within bounds
 	if !InBounds(fly, quadrants) {
 		panic("fly is out of simulation bounds")
 	}
 
 	return quadrant // Placeholder
-}
-
-// InBounds checks if the fly is within the simulation bounds.
-func InBounds(fly *Fly, quadrants []Quadrant) bool {
-	for _, q := range quadrants {
-		if fly.position.x >= q.x && fly.position.x <= q.x+q.width &&
-			fly.position.y >= q.y && fly.position.y <= q.y+q.width {
-			return true
-		}
-	}
-	return false
 }
 
 // GetTemperature returns the temperature of the quadrant.
@@ -492,6 +481,17 @@ func GetTemperature(quadrantID int, quadrant []Quadrant) float64 {
 	}
 
 	return temp
+}
+
+// InBounds checks if the fly is within the simulation bounds.
+func InBounds(fly *Fly, quadrants []Quadrant) bool {
+	for _, q := range quadrants {
+		if fly.position.x >= q.x && fly.position.x <= q.x+q.width &&
+			fly.position.y >= q.y && fly.position.y <= q.y+q.width {
+			return true
+		}
+	}
+	return false
 }
 
 // CopyCountry takes a Country and return a copy of all flies in this Country with fields copied over.
