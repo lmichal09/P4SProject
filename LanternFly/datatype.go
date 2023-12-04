@@ -16,9 +16,15 @@ type Fly struct {
 
 }
 type Color struct {
+<<<<<<< HEAD
 	red   uint8
 	blue  uint8
 	green uint8
+=======
+	red   uint
+	blue  uint
+	green uint
+>>>>>>> ee5c66f1a847219b99f1b0f4b5f1a2e978c332a3
 }
 
 type stage struct {
