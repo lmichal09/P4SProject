@@ -6,8 +6,10 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 const G = 6.67408e-11
@@ -191,6 +193,32 @@ func GetBaseTemp(stage int) float64 {
 	}
 
 	return temp
+}
+func ReadTrees() []OrderedPair {
+	var habitats []OrderedPair
+	for i, record := range records {
+		if i == 0 { // Skip header
+			continue
+		}
+
+		// Parse longitude
+		longitude, err := strconv.ParseFloat(record[0], 64) // Assuming longitude is in the first column
+		if err != nil {
+			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
+			continue
+		}
+
+		// Parse latitude
+		latitude, err := strconv.ParseFloat(record[1], 64) // Assuming latitude is in the second column
+		if err != nil {
+			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
+			continue
+		}
+
+		// Append the habitat to the slice
+		habitats = append(habitats, OrderedPair{x: longitude, y: latitude})
+	}
+	return habitats
 }
 
 // UpdateLifeStage() updates the life stage of flies based on the cumulative degree-days (CDD)
