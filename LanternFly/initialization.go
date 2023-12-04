@@ -383,7 +383,7 @@ func InitializeCountry() Country {
 
 	flies, err := ReadSampleDataFromFile("Data/lydetext.txt")
 	if err != nil {
-		fmt.Println("Error loading weather data:", err)
+		fmt.Println("Error loading weather data:", err) //BUG: why is this error loading weather data?
 	}
 
 	numberOfFlies := len(flies)

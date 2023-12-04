@@ -318,7 +318,7 @@ func RandomMovement(fly *Fly) OrderedPair {
 
 // LongDistanceMovement simulates long-distance movement for a Fly.
 func LongDistanceMovement(fly *Fly) OrderedPair {
-	maxDistance := 2000.0 // TODO: Define your max long-distance here (in kilometers)
+	maxDistance := 2000.0 // TODO: Define max long-distance
 
 	// Randomly choose a distance within the maximum limit
 	distance := rand.Float64() * maxDistance
