@@ -1,0 +1,13 @@
+Oregon July-September Maximum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202109,81.3,1
+,,
+Oregon July-September Minimum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202109,50.2,0

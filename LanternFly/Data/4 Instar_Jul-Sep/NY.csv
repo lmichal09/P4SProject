@@ -1,0 +1,13 @@
+New York July-September Maximum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202109,76.1,-0.8
+,,
+New York July-September Minimum Temperature,,
+Units: Degrees Fahrenheit,,
+Base Period: 2019-2023,,
+Missing: -99,,
+Date,Value,Anomaly
+202109,57.1,1
