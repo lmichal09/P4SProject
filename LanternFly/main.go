@@ -122,25 +122,6 @@ func main() {
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
 }
 
-// Initialize and generate randomly direction
-func initializeBoids(numBoids int, initialSpeed float64, skyWidth float64) []Boid {
-	boids := make([]Boid, numBoids)
-
-	for i := range boids {
-		// Generate a random unit vector for direction
-		direction := randomUnitVector()
-
-		// Calculate the initial velocity by scaling the direction vector
-		boids[i].Velocity.X = direction.X * initialSpeed
-		boids[i].Velocity.Y = direction.Y * initialSpeed
-
-		// Set the initial position within the sky's width
-		boids[i].Position.X = rand.Float64() * skyWidth
-		boids[i].Position.Y = rand.Float64() * skyWidth
-	}
-
-	return coordinates, nil
-}
 
 // CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
 func CreateInitialHabitat(coordinates []Coordinate) Country {
