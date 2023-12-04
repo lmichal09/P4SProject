@@ -82,6 +82,10 @@ func ReadSampleDataFromFile(filename string) ([]SampleData, error) {
 			continue
 		}
 
+		if fields[2] != "2021" {
+			continue
+		}
+
 		if fields[6] == "NA" || fields[6] == "" || fields[7] == "NA" || fields[7] == "" {
 			continue // Skip the line if either field is "NA" or empty
 		}
@@ -112,7 +116,10 @@ func ReadSampleDataFromFile(filename string) ([]SampleData, error) {
 		lydePresent, err := parseBool(fields[6])
 		if err != nil {
 			fmt.Printf("Error parsing lydePresent in row: %v\n", err)
-
+		}
+		
+		if lydePresent == false { // skip if the flies are not reported
+			continue
 		}
 
 		lydeEstablished, err := parseBool(fields[7])
@@ -394,9 +401,18 @@ func InitializeCountry() Country {
 	for i := 0; i < numberOfFlies; i++ {
 		country.flies[i].position.x = flies[i].RoundedLongitude
 		country.flies[i].position.y = flies[i].RoundedLatitude
-		country.flies[i].stage = 0
-		country.flies[i].isAlive = true
+		country.flies[i].stage = 0 // Considered all the reported flies are at egg stage
+		// Velocity and acceleration are 0 at this stage
+	}
 
+	// Only 10% of the flies are alive
+
+	for i := 0; i < numberOfFlies; i++ {
+		if rand.Float64() < 0.1 {
+			country.flies[i].isAlive = true
+		} else {
+			country.flies[i].isAlive = false
+		}
 	}
 
 	// Add Location ID:
