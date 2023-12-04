@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// Skip the header row and process the data
-	var habitats []Coordinate
+	var habitats []OrderedPair
 	for i, record := range records {
 		if i == 0 { // Skip header
 			continue
@@ -70,7 +70,7 @@ func main() {
 		}
 
 		// Append the habitat to the slice
-		habitats = append(habitats, Coordinate{Longitude: longitude, Latitude: latitude})
+		habitats = append(habitats, OrderedPair{x: longitude, y: latitude})
 	}
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
 
