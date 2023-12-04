@@ -3,6 +3,7 @@ package main
 import (
 	"canvas"
 	"image"
+	"image/color"
 )
 
 //AnimateSystem takes a slice of Country objects along with a canvas width
@@ -22,7 +23,7 @@ func AnimateSystem(timePoints []Country, canvasWidth, drawingFrequency int) []im
 }
 
 // GetFlyColor returns the color for a fly based on its stage
-func GetFlyColor(fly Fly) canvas.Color {
+func GetFlyColor(fly Fly) color.Color {
 	if !fly.isAlive {
 		return canvas.MakeColor(0, 0, 0) // Black for dead flies
 	}
