@@ -47,32 +47,6 @@ const (
 
 
 
-type Country struct {
-	width float64
-	flies []Fly
-	trees []Tree
-}
-
-type Fly struct {
-	position, velocity, acceleration OrderedPair
-	stage                            int     // 0 = egg, 1 = instar1, 2 = instar2, 3 = instar3, 4 = instar4, 5 = adult
-	energy                           float64 // Degree-days
-	isAlive                          bool
-	locationID                       int
-}
-
-type Tree struct {
-	position OrderedPair
-}
-
-	minLat float64 = 24.396308  // Southernmost point in the US
-	maxLat float64 = 49.384358  // Northernmost point in the contiguous US
-	minLon float64 = -125.00165 // Westernmost point in the contiguous US
-	maxLon float64 = -66.93457  // Easternmost point in the contiguous US
-
-func width() float64 {
-	return maxLon - minLon	
-}
 
 func InitializeCountry(maxLon, minLon float64, numOfFlies, numOfTrees) Country {
 	country := Country{} // Create the initial country.
@@ -262,7 +236,6 @@ func InitializeCountry(numberOfFlies, numberOfTree) Country {
 			country.flies[i].locationID = 25
 		}	
 	}
-	
 
 	weatherData, err := LoadWeatherData("data")
 
@@ -332,7 +305,6 @@ func InitializeCountry(numberOfFlies, numberOfTree) Country {
 		country.trees[i].position.y =
 	}
 
-	
 	return country
 }
 
@@ -342,14 +314,6 @@ func randomInRange(min, max float64) float64 {
 	return min + rand.Float64()*(max-min)
 }
 
-func main() {
-	quadrants := InitializeQuadrants()
-	for _, quadrant := range quadrants.Quadrants {
-		fmt.Printf("Quadrant ID: %d, Bottom Left (X, Y): (%.6f, %.6f), Width: %.6f, Temp: %.6f\n",
-			quadrant.id, quadrant.x, quadrant.y, quadrant.width, quadrant.temp)
-	}
-
-}
 
 func FareinheitToCelsius(f float64) float64 {
 	return (f - 32) * 5 / 9

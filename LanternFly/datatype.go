@@ -1,10 +1,13 @@
 package main
 
 type Country struct {
-	width  float64
-	height float64
-	flies  []Fly
-	trees  []OrderedPair
+	width float64
+	flies []Fly
+	trees []Tree
+}
+
+type Tree struct {
+	position OrderedPair
 }
 
 type Fly struct {
@@ -31,6 +34,15 @@ type OrderedPair struct {
 	y float64
 }
 
+// Node object contains a slice of children (this could just as easily be an array of length 4).
+// A node refers to a star. Sometimes, the star will be a "dummy" star, sometimes it is a star in the
+// universe, and sometimes it is nil. Every internal node points to a dummy star.
+type Node struct {
+	children []*Node
+	fly      *Fly
+	sector   Quadrant
+}
+
 // Quadrant is an object representing a sub-square within a larger universe.
 type Quadrant struct {
 	x     float64 //bottom left corner x coordinate
@@ -38,12 +50,6 @@ type Quadrant struct {
 	width float64
 	id    int
 	temp  float64
-}
-
-// Coordinate represents geographical coordinates with latitude and longitude.
-type Coordinate struct {
-	Latitude  float64
-	Longitude float64
 }
 
 const (
