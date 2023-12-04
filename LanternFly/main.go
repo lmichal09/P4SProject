@@ -8,7 +8,6 @@ import (
 	"image/color"
 	"image/draw"
 	"image/gif"
-	"math/rand"
 	"os"
 	"strconv"
 )
@@ -88,51 +87,6 @@ func main() {
 	fmt.Println("GIF drawn!")
 
 	fmt.Println("Simulation complete!")
-}
-
-// CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
-func CreateInitialHabitat(coordinates []Coordinate) Country {
-	country := Country{}  // Create the initial country.
-	country.width = 100.0 // Set a default width, you can adjust this value as needed
-
-	// Initialize the flies based on the provided coordinates
-	numFlies := len(coordinates)
-	country.flies = make([]Fly, numFlies)
-
-	for i, coord := range coordinates {
-		// Use coordinates to set the initial position of flies
-		country.flies[i].position.x = coord.Longitude
-		country.flies[i].position.y = coord.Latitude
-
-		// Velocity and acceleration are random since no data is available
-		country.flies[i].velocity.x = rand.Float64() * 2
-		country.flies[i].velocity.y = rand.Float64() * 5
-		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 2
-		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 5
-
-		// Lantern fly's stage random from 1-4
-		country.flies[i].stage = rand.Intn(4) + 1
-
-		// Initialize the energy of flies based on their stage
-		switch country.flies[i].stage {
-		case 1: // egg
-			country.flies[i].energy = rand.Float64() * 39.5
-		case 2: // nymph1
-			country.flies[i].energy = rand.Float64() * 250
-		case 3: // nymph2
-			country.flies[i].energy = rand.Float64() * 108.7
-		case 4: // adult
-			country.flies[i].energy = rand.Float64() * 180
-		}
-
-		// When initialized, consider all flies are alive
-		country.flies[i].isAlive = true
-
-		// LocationID is random from 0-24
-		country.flies[i].locationID = rand.Intn(25) // Get data from file, can be changed later
-	}
-
-	return country
 }
 
 // SaveGIF saves a sequence of images as a GIF file
