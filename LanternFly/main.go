@@ -74,6 +74,13 @@ func main() {
 	}
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
 
+	outputFile := "output/output.gif" // Define the output file path and name
+
+	initialCountry := InitializeCountry()
+	timePoints := SimulateMigration(initialCountry, 3)
+	canvasWidth := 1000
+	imageFrequency := 1
+
 	// Call your AnimateSystem function to generate images
 	images := AnimateSystem(timePoints, canvasWidth, imageFrequency) //error
 
@@ -89,54 +96,6 @@ func main() {
 	fmt.Println("Simulation complete!")
 }
 
-<<<<<<< HEAD
-// CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
-func CreateInitialHabitat(coordinates []OrderedPair) Country {
-	country := Country{}  // Create the initial country.
-	country.width = 100.0 // Set a default width, you can adjust this value as needed
-
-	// Initialize the flies based on the provided coordinates
-	numFlies := len(coordinates)
-	country.flies = make([]Fly, numFlies)
-
-	for i, coord := range coordinates {
-		// Use coordinates to set the initial position of flies
-		country.flies[i].position.x = coord.Longitude
-		country.flies[i].position.y = coord.Latitude
-
-		// Velocity and acceleration are random since no data is available
-		country.flies[i].velocity.x = rand.Float64() * 2
-		country.flies[i].velocity.y = rand.Float64() * 5
-		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 2
-		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 5
-
-		// Lantern fly's stage random from 1-4
-		country.flies[i].stage = rand.Intn(4) + 1
-
-		// Initialize the energy of flies based on their stage
-		switch country.flies[i].stage {
-		case 1: // egg
-			country.flies[i].energy = rand.Float64() * 39.5
-		case 2: // nymph1
-			country.flies[i].energy = rand.Float64() * 250
-		case 3: // nymph2
-			country.flies[i].energy = rand.Float64() * 108.7
-		case 4: // adult
-			country.flies[i].energy = rand.Float64() * 180
-		}
-
-		// When initialized, consider all flies are alive
-		country.flies[i].isAlive = true
-
-		// LocationID is random from 0-24
-		country.flies[i].locationID = rand.Intn(25) // Get data from file, can be changed later
-	}
-
-	return country
-}
-
-=======
->>>>>>> ac3c76b29939c8af2636e8b7ca326c4e71c084ed
 // SaveGIF saves a sequence of images as a GIF file
 func SaveGIF(images []image.Image, filename string) error {
 	file, err := os.Create(filename)
