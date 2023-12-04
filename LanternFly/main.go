@@ -3,64 +3,18 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"gifhelper"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/gif"
 	"math/rand"
 	"os"
-
-	"github.com/nfnt/resize"
-	"github.com/oliamb/cutter"
+	"strconv"
 )
 
 func main() {
 	fmt.Println("Lantern Flies simulation!")
-
-	// Set up an HTTP server with the upload handler
-	http.HandleFunc("/", uploadHandler)
-	http.ListenAndServe(":8080", nil)
-
-	outputFile := "output/output.gif" // Define the output file path and name
-
-	fmt.Println("CLAs read!")
-
-	fmt.Println("Now, simulating boids.")
-
-	// Declare all Fly objects
-	var initialSky Sky
-	initialSky.Width = skyWidth
-	initialSky.Boids = make([]Boid, 0)
-	initialSky.MaxBoidSpeed = maxBoidSpeed
-	initialSky.Proximity = proximity
-	initialSky.SeparationFactor = separationFactor
-	initialSky.AlignmentFactor = alignmentFactor
-	initialSky.CohesionFactor = cohesionFactor
-
-	// Call the initializeBoids function to create the initial boids
-	initialSky.Boids = initializeBoids(numBoids, initialSpeed, initialSky.Width)
-
-	// Call your SimulateBoids function to perform the simulation
-	timePoints := SimulateBoids(initialSky, numGens, timeStep) //error
-
-	fmt.Println("Simulation complete!")
-
-	fmt.Println("Drawing Skies.")
-
-	// Call your AnimateSystem function to generate images
-	images := AnimateSystem(timePoints, canvasWidth, imageFrequency) //error
-
-	fmt.Println("Images drawn!")
-
-	fmt.Println("Generating an animated GIF.")
-
-	// Save the images as an animated GIF
-	gifhelper.ImagesToGIF(images, outputFile)
-
-	fmt.Println("GIF drawn!")
-
-	fmt.Println("Simulation complete!")
-
 	// step 1: reading input from a single file.
 
 	filename := "Data/lydetext.txt"
@@ -78,48 +32,107 @@ func main() {
 		}
 	}
 	// Open the CSV file
-    file, err := os.Open("tree.csv")
-    if err != nil {
-        fmt.Println("Error opening file:", err)
-        return
-    }
-    defer file.Close()
+	file, err := os.Open("tree.csv")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
 
-    // Create a CSV reader
-    reader := csv.NewReader(file)
+	// Create a CSV reader
+	reader := csv.NewReader(file)
 
-    // Read the file
-    records, err := reader.ReadAll()
-    if err != nil {
-        fmt.Println("Error reading file:", err)
-        return
-    }
+	// Read the file
+	records, err := reader.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return
+	}
 
-    // Skip the header row and process the data
-    var habitats []OrderPair
-    for i, record := range records {
-        if i == 0 { // Skip header
-            continue
-        }
+	// Skip the header row and process the data
+	var habitats []Coordinate
+	for i, record := range records {
+		if i == 0 { // Skip header
+			continue
+		}
 
-        // Parse longitude
-        longitude, err := strconv.ParseFloat(record[0], 64) // Assuming longitude is in the first column
-        if err != nil {
-            fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
-            continue
-        }
+		// Parse longitude
+		longitude, err := strconv.ParseFloat(record[0], 64) // Assuming longitude is in the first column
+		if err != nil {
+			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
+			continue
+		}
 
-        // Parse latitude
-        latitude, err := strconv.ParseFloat(record[1], 64) // Assuming latitude is in the second column
-        if err != nil {
-            fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
-            continue
-        }
+		// Parse latitude
+		latitude, err := strconv.ParseFloat(record[1], 64) // Assuming latitude is in the second column
+		if err != nil {
+			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
+			continue
+		}
 
-        // Append the habitat to the slice
-        habitats = append(habitats, Habitat{Longitude: longitude, Latitude: latitude})
-    }
+		// Append the habitat to the slice
+		habitats = append(habitats, Coordinate{Longitude: longitude, Latitude: latitude})
+	}
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
+
+	// Call your AnimateSystem function to generate images
+	images := AnimateSystem(timePoints, canvasWidth, imageFrequency) //error
+
+	fmt.Println("Images drawn!")
+
+	fmt.Println("Generating an animated GIF.")
+
+	// Save the images as an animated GIF
+	gifhelper.ImagesToGIF(images, outputFile)
+
+	fmt.Println("GIF drawn!")
+
+	fmt.Println("Simulation complete!")
+}
+
+// CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
+func CreateInitialHabitat(coordinates []Coordinate) Country {
+	country := Country{}  // Create the initial country.
+	country.width = 100.0 // Set a default width, you can adjust this value as needed
+
+	// Initialize the flies based on the provided coordinates
+	numFlies := len(coordinates)
+	country.flies = make([]Fly, numFlies)
+
+	for i, coord := range coordinates {
+		// Use coordinates to set the initial position of flies
+		country.flies[i].position.x = coord.Longitude
+		country.flies[i].position.y = coord.Latitude
+
+		// Velocity and acceleration are random since no data is available
+		country.flies[i].velocity.x = rand.Float64() * 2
+		country.flies[i].velocity.y = rand.Float64() * 5
+		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 2
+		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 5
+
+		// Lantern fly's stage random from 1-4
+		country.flies[i].stage = rand.Intn(4) + 1
+
+		// Initialize the energy of flies based on their stage
+		switch country.flies[i].stage {
+		case 1: // egg
+			country.flies[i].energy = rand.Float64() * 39.5
+		case 2: // nymph1
+			country.flies[i].energy = rand.Float64() * 250
+		case 3: // nymph2
+			country.flies[i].energy = rand.Float64() * 108.7
+		case 4: // adult
+			country.flies[i].energy = rand.Float64() * 180
+		}
+
+		// When initialized, consider all flies are alive
+		country.flies[i].isAlive = true
+
+		// LocationID is random from 0-24
+		country.flies[i].locationID = rand.Intn(25) // Get data from file, can be changed later
+	}
+
+	return country
 }
 
 // SaveGIF saves a sequence of images as a GIF file
