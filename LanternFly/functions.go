@@ -22,9 +22,10 @@ func SimulateMigration(initialCountry Country, numYears int) []Country {
 		timePoints[i] = UpdateCountry(timePoints[i-1])
 		//TODO: PopulationSize()
 	}
-	finaltimePoints := SorttheTimpepoints(timepoints)
 
-	return timePoints
+	finaltimePoints := SorttheTimePoints(timePoints)
+
+	return finaltimePoints
 }
 
 // Population calculates and returns the population of flies in each state.
@@ -103,6 +104,9 @@ func UpdateCountry(currCountry Country) Country {
 
 	var totalNewEggs []Fly
 
+	// weather
+	var weather []Quadrant
+
 	// loop through days
 	for i := 0; ; i++ {
 		// keep looping until all flies are dead, except for eggs
@@ -113,7 +117,7 @@ func UpdateCountry(currCountry Country) Country {
 		// loop through flies
 		for j := 0; j < len(currCountry.flies); j++ {
 			// compute degree days
-			newCountry.flies[j].energy += ComputeDegreeDay(&currCountry.flies[j])
+			newCountry.flies[j].energy += ComputeDegreeDay(&currCountry.flies[j], weather)
 
 			// update life stage
 			newCountry.flies[j].stage = UpdateLifeStage(&newCountry.flies[j])
@@ -248,10 +252,10 @@ func ComputeMortality(fly *Fly) bool {
 
 // ComputeFecundity
 // females lay one or two egg masses, each containing 30-60 eggs
-func ComputeFecundity(fly Fly, temperature float64) []Fly {
+func ComputeFecundity(fly Fly) []Fly {
 	newFly := make([]Fly, 0)
 
-	// TODO: probability of laying eggs
+	// TODO: probability of laying eggs 10.5%
 
 	// randomly choose the number of egg masses
 	numEggMasses := rand.Intn(2) + 1
@@ -328,7 +332,7 @@ func LongDistanceMovement(fly *Fly) OrderedPair {
 // DirectedMovement updates the position of adult flies based on directed movement
 func DirectedMovement(fly *Fly) OrderedPair {
 	// identify the nearest host tree or a direction with higher concentration of host trees
-	direction := FindHostDirection(fly.position, hostMaps)
+	direction := FindHostDirection(fly.position, habitats)
 
 	// move towards the direction, assume a simpler linear movement
 	new := ConvertDistanceToCoordinates(1, direction, fly.position)
@@ -338,14 +342,14 @@ func DirectedMovement(fly *Fly) OrderedPair {
 
 // ConvertDistanceToCoordinates converts a given distance (in kilometers) and direction (in radians) into new coordinates.
 func ConvertDistanceToCoordinates(distance, direction float64, startingCoordinates OrderedPair) OrderedPair {
-	newX := startingCoordinates.x + (distance/EarthRadius)*(180.0/math.Pi)*math.Cos(direction)
-	newY := startingCoordinates.y + (distance/EarthRadius)*(180.0/math.Pi)*math.Sin(direction)
+	newX := startingCoordinates.x + (distance/earthRadius)*(180.0/math.Pi)*math.Cos(direction)
+	newY := startingCoordinates.y + (distance/earthRadius)*(180.0/math.Pi)*math.Sin(direction)
 	return OrderedPair{newX, newY}
 }
 
-func FindHostDirection(position OrderedPair, hostMaps []HostMap) OrderedPair {
+func FindHostDirection(position OrderedPair, hostMaps []Coordinate) OrderedPair {
 	minDistance := math.MaxFloat64
-	var nearestTree HostMap
+	var nearestTree Coordinate
 
 	// Find the nearest host tree
 	for _, tree := range hostMaps {
@@ -415,7 +419,7 @@ func DivideCountry(country Country) []Quadrant {
 	)
 
 	// Check for invalid country dimensions
-	if country.width <= 0 || country.height <= 0 {
+	if country.width <= 0 || country.width <= 0 { //
 		panic("invalid country dimensions")
 	}
 
@@ -454,7 +458,7 @@ func GetQuadrant(fly *Fly, quadrants []Quadrant) int {
 	}
 
 	// if the fly is out of bounds, panic
-	panic("fly is out of simulation bounds")
+	// TODO: panic("fly is out of simulation bounds")
 
 	return quadrant // Placeholder
 }
@@ -465,11 +469,11 @@ func GetTemperature(quadrantID int, quadrant []Quadrant) float64 {
 	// loop through the quadrant slice and find the quadrant with the matching id
 	for _, q := range quadrant {
 		if q.id == quadrantID {
-			temp = q.temperature
+			temp = q.temp
 		}
 	}
 
-	if quadrantID < 1 || quadrantID > len(quadrants) {
+	if quadrantID < 1 || quadrantID > len(quadrant) {
 		panic("invalid quadrant ID")
 	}
 

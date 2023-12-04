@@ -8,7 +8,6 @@ import (
 	"image/color"
 	"image/draw"
 	"image/gif"
-	"math/rand"
 	"os"
 	"strconv"
 )
@@ -71,7 +70,7 @@ func main() {
 		}
 
 		// Append the habitat to the slice
-		habitats = append(habitats, OrderedPair{Longitude: longitude, Latitude: latitude})
+		habitats = append(habitats, OrderedPair{x: longitude, y: latitude})
 	}
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
 
@@ -90,6 +89,7 @@ func main() {
 	fmt.Println("Simulation complete!")
 }
 
+<<<<<<< HEAD
 // CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
 func CreateInitialHabitat(coordinates []OrderedPair) Country {
 	country := Country{}  // Create the initial country.
@@ -135,6 +135,8 @@ func CreateInitialHabitat(coordinates []OrderedPair) Country {
 	return country
 }
 
+=======
+>>>>>>> ac3c76b29939c8af2636e8b7ca326c4e71c084ed
 // SaveGIF saves a sequence of images as a GIF file
 func SaveGIF(images []image.Image, filename string) error {
 	file, err := os.Create(filename)
