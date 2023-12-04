@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"gifhelper"
 	"image"
@@ -9,7 +8,6 @@ import (
 	"image/draw"
 	"image/gif"
 	"os"
-	"strconv"
 )
 
 // BUG: everything in io.go is commented out
@@ -18,68 +16,19 @@ func main() {
 	fmt.Println("Lantern Flies simulation!")
 	// step 1: reading input from a single file.
 
-	filename := "Data/lydetext.txt"
-	allData := ReadSamplesFromDirectory(filename) // BUG: ReadSamplesFromDirectory is commented out so this is undefined
-
-	//step 2: reading input from a directory
-
-	for sampleName, data := range allData {
-		csvFilename := sampleName + ".csv"
-		err := WriteToFile(csvFilename, data) // BUG: WriteToFile is commented out so this is undefined
-		if err != nil {
-			fmt.Printf("Error writing to file %s: %v\n", csvFilename, err)
-		} else {
-			fmt.Printf("Data written to %s\n", csvFilename)
-		}
-	}
-	// Open the CSV file
-	file, err := os.Open("tree.csv")
-	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
-	}
-	defer file.Close()
-
-	// Create a CSV reader
-	reader := csv.NewReader(file)
-
-	// Read the file
-	records, err := reader.ReadAll()
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-
-	// Skip the header row and process the data
-	var habitats []OrderedPair
-	for i, record := range records {
-		if i == 0 { // Skip header
-			continue
-		}
-
-		// Parse longitude
-		longitude, err := strconv.ParseFloat(record[0], 64) // Assuming longitude is in the first column
-		if err != nil {
-			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
-			continue
-		}
-
-		// Parse latitude
-		latitude, err := strconv.ParseFloat(record[1], 64) // Assuming latitude is in the second column
-		if err != nil {
-			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
-			continue
-		}
-
-		// Append the habitat to the slice
-		habitats = append(habitats, OrderedPair{x: longitude, y: latitude})
-	}
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
 
 	outputFile := "output/output.gif" // Define the output file path and name
 
 	initialCountry := InitializeCountry()
-	timePoints := SimulateMigration(initialCountry, 3)
+	fmt.Println("Country initialized.")
+
+	quadrants := InitializeQuadrants()
+	fmt.Println("Quadrants initialized.")
+
+	timePoints := SimulateMigration(initialCountry, 3, quadrants)
+	fmt.Println("Migration simulated.")
+
 	canvasWidth := 1000
 	imageFrequency := 1
 

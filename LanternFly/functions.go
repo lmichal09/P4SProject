@@ -6,6 +6,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -13,72 +14,19 @@ import (
 const G = 6.67408e-11
 
 // SimulateMigration
-func SimulateMigration(initialCountry Country, numYears int) []Country {
+func SimulateMigration(initialCountry Country, numYears int, weather Weather) []Country {
 	timePoints := make([]Country, numYears+1)
 	timePoints[0] = initialCountry
 
 	//range over num of generations and set the i-th country equal to updating the (i-1)th Country
 	for i := 1; i < len(timePoints); i++ {
-		timePoints[i] = UpdateCountry(timePoints[i-1])
-
+		timePoints[i] = UpdateCountry(timePoints[i-1], weather)
+		// fmt.Println("here")
 	}
 
-	finaltimePoints := SorttheTimePoints(timePoints)
+	// finaltimePoints := SorttheTimePoints(timePoints)
 
-	return finaltimePoints
-}
-
-func SorttheTimePoints(timepoints []Country) []Country {
-	n := len(timepoints)
-
-	for i := 0; i <= n; i++ {
-		timepoints[i] = SorttheCountry(timepoints[i])
-	}
-	return timepoints
-}
-
-func SorttheCountry(country Country) Country {
-	n := len(country.flies)
-
-	for i := 0; i <= n; i++ {
-		country.flies[i] = SorttheFlies(country.flies[i])
-
-	}
-	return country
-}
-
-func SorttheFlies(fly Fly) Fly {
-
-	if fly.stage == 0 {
-		fly.color.red = 237
-		fly.color.blue = 7
-		fly.color.green = 15
-	} else if fly.stage == 1 {
-		fly.color.red = 252
-		fly.color.blue = 20
-		fly.color.green = 144
-	} else if fly.stage == 2 {
-		fly.color.red = 252
-		fly.color.blue = 20
-		fly.color.green = 249
-	} else if fly.stage == 3 {
-		fly.color.red = 43
-		fly.color.blue = 20
-		fly.color.green = 252
-	} else if fly.stage == 4 {
-		fly.color.red = 20
-		fly.color.blue = 252
-		fly.color.green = 214
-	} else if fly.stage == 5 {
-		fly.color.red = 175
-		fly.color.blue = 252
-		fly.color.green = 20
-	} else if fly.stage == 6 {
-		fly.color.red = 0
-		fly.color.blue = 0
-		fly.color.green = 0
-	}
-	return fly
+	return timePoints
 }
 
 // lanternfly only has one generation per year
@@ -86,16 +34,13 @@ func SorttheFlies(fly Fly) Fly {
 // by the end of the year, there should only be eggs
 // need to record the number of adults
 // also keep track on the position of the eggs, which will then be used for next year's simulation
-func UpdateCountry(currCountry Country) Country {
+func UpdateCountry(currCountry Country, weather Weather) Country {
 	newCountry := CopyCountry(currCountry) // Copy for all flies and attributes associated with each fly
 
 	var totalNewEggs []Fly
 
 	// weather
-	var weather []Quadrant
 	var trees []OrderedPair
-
-	// TODO: get weather data
 
 	// get tree data
 	trees = GetTreePositions(currCountry)
@@ -127,6 +72,7 @@ func UpdateCountry(currCountry Country) Country {
 				totalNewEggs = append(totalNewEggs, newEggs...)
 			}
 		}
+		fmt.Println("here")
 	}
 
 	// remove all dead flies
@@ -157,12 +103,12 @@ func GetTreePositions(country Country) []OrderedPair {
 }
 
 // ComputeDegreeDay calculates the degree days for a single day.
-func ComputeDegreeDay(fly *Fly, quadrants []Quadrant) float64 {
+func ComputeDegreeDay(fly *Fly, weather Weather) float64 {
 	// get the quadrant of the fly to determine the temperature
-	quadrantID := GetQuadrant(fly, quadrants)
+	quadrantID := GetQuadrant(fly, weather.Quadrants)
 
 	// get the temperature of the quadrant
-	temperature := GetTemperature(quadrantID, quadrants)
+	temperature := GetTemperature(quadrantID, weather.Quadrants) // TODO: this is the max temp?
 
 	// get the base temperature base on the fly's stage
 	baseTemp := GetBaseTemp(fly.stage)
@@ -200,12 +146,15 @@ func GetBaseTemp(stage int) float64 {
 func UpdateLifeStage(fly *Fly) int {
 	stage := fly.stage
 
-	if fly.stage < 0 || fly.stage > 5 {
+	if fly.stage < 0 || fly.stage > 6 {
 		panic("invalid life stage")
 	}
 
+	// TODO: hatch
+	// TODO: must survive according to a factor of egg viability & must accumulate a certain number of degree-days to molt to the next stage
+
 	// Required GDD for each stage. 1: 166.6, 208.7, 410.5, 620
-	if fly.energy >= 50 && fly.energy < 166.6 {
+	if fly.energy >= 0 && fly.energy < 166.6 {
 		stage = 1
 	} else if fly.energy >= instar1To2Threshold && fly.energy < instar2To3Threshold {
 		stage = 2
@@ -215,7 +164,7 @@ func UpdateLifeStage(fly *Fly) int {
 		stage = 4
 	} else if fly.energy >= instar4ToAdultThreshold {
 		stage = 5
-	} else if fly.energy > adultToDieThreshold {
+	} else { // TODO: adult to die
 		stage = 6 // dead
 	}
 
@@ -255,29 +204,28 @@ func ComputeMortality(fly *Fly) bool {
 func ComputeFecundity(fly Fly) []Fly {
 	newFly := make([]Fly, 0)
 
-	// Probability of laying eggs 10.5%
-	if rand.Float64() <= 0.105 {
-		// randomly choose the number of egg masses
-		numEggMasses := rand.Intn(2) + 1
+	// TODO: probability of laying eggs 10.5%
 
-		// randomly choose the number of eggs in each egg mass
-		numEggs := rand.Intn(30) + 30
+	// randomly choose the number of egg masses
+	numEggMasses := rand.Intn(2) + 1
 
-		totalEggs := numEggMasses * numEggs
+	// randomly choose the number of eggs in each egg mass
+	numEggs := rand.Intn(30) + 30
 
-		// location of the eggs is the location of the adult
-		for i := 0; i < totalEggs; i++ {
-			newEgg := Fly{
-				position: OrderedPair{
-					x: fly.position.x,
-					y: fly.position.y,
-				},
-				stage:   0,
-				energy:  0,
-				isAlive: true,
-			}
-			newFly = append(newFly, newEgg)
+	totalEggs := numEggMasses * numEggs
+
+	// location of the eggs is the location of the adult
+	for i := 0; i < totalEggs; i++ {
+		newEgg := Fly{
+			position: OrderedPair{
+				x: fly.position.x,
+				y: fly.position.y,
+			},
+			stage:   0,
+			energy:  0,
+			isAlive: true,
 		}
+		newFly = append(newFly, newEgg)
 	}
 
 	return newFly
@@ -297,7 +245,7 @@ func ComputeMovement(fly *Fly, trees []OrderedPair) OrderedPair {
 
 // RandomMovement updates the position of adult flies based on random movement
 func RandomMovement(fly *Fly) OrderedPair {
-	maxDistance := 5.0 // TODO: max distance
+	maxDistance := 0.0 // TODO: max distance
 
 	// possibility of flies carried by human
 	if rand.Float64() < 0.1 {
@@ -318,7 +266,7 @@ func RandomMovement(fly *Fly) OrderedPair {
 
 // LongDistanceMovement simulates long-distance movement for a Fly.
 func LongDistanceMovement(fly *Fly) OrderedPair {
-	maxDistance := 2000.0 // TODO: Define max long-distance
+	maxDistance := 2000.0 // TODO: Define your max long-distance here (in kilometers)
 
 	// Randomly choose a distance within the maximum limit
 	distance := rand.Float64() * maxDistance
@@ -428,7 +376,7 @@ func DivideCountry(country Country) []Quadrant {
 	)
 
 	// Check for invalid country dimensions
-	if country.width <= 0 || country.width <= 0 { //
+	if country.width <= 0.0 { //
 		panic("invalid country dimensions")
 	}
 

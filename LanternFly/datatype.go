@@ -20,7 +20,6 @@ type Fly struct {
 
 }
 
-
 type Weather struct {
 	x         float64 // Bottom left corner x coordinate (Longitude)
 	y         float64 // Bottom left corner y coordinate (Latitude)
@@ -86,11 +85,9 @@ const (
 
 	earthRadius float64 = 6371 // km
 
-
 	minLat float64 = 31.33   // Southernmost point in the US
 	maxLat float64 = 45.71   // Northernmost point in the contiguous US
 	minLon float64 = -123.27 // Westernmost point in the contiguous US
 	maxLon float64 = -68.93  // Easternmost point in the contiguous US
-
 
 )
