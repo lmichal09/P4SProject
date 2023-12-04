@@ -1,61 +1,93 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"gifhelper"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/gif"
 	"math/rand"
 	"os"
+	"strconv"
 )
 
 func main() {
-	// Read longitude and latitude coordinates from the text file
-	coordinates, err := ReadCoordinates("lydetext.txt")
-	if err != nil {
-		fmt.Printf("Error reading coordinates: %v\n", err)
-		return
-	}
+	fmt.Println("Lantern Flies simulation!")
+	// step 1: reading input from a single file.
 
-	// Create an initial habitat based on the coordinates
-	initialHabitat := CreateInitialHabitat(coordinates)
+	filename := "Data/lydetext.txt"
+	allData := ReadSamplesFromDirectory(filename)
 
-	// Simulate lantern fly migration over multiple generations
-	numGenerations := 100
-	timePerGeneration := 1.0 // Time for each generation
-	timePoints := SimulateMigration(initialHabitat, numGenerations, timePerGeneration)
+	//step 2: reading input from a directory
 
-	// Create images for each time point in the simulation
-	canvasWidth := 500
-	drawingFrequency := 1
-	images := AnimateSystem(timePoints, canvasWidth, drawingFrequency)
-
-	// Save the images as a GIF
-	err = SaveGIF(images, "lantern_migration.gif")
-	if err != nil {
-		fmt.Printf("Error saving GIF: %v\n", err)
-		return
-	}
-
-	fmt.Println("Simulation completed. GIF saved as 'lantern_migration.gif'")
-}
-
-// ReadCoordinates reads longitude and latitude coordinates from a text file
-func ReadCoordinates(filename string) ([]Coordinate, error) {
-	// Use the provided code to read sample data from the text file
-	sampleData := ReadSampleDataFromFile(filename)
-
-	// Convert SampleData to Coordinate
-	coordinates := make([]Coordinate, len(sampleData))
-	for i, data := range sampleData {
-		coordinates[i] = Coordinate{
-			Latitude:  data.Latitude,
-			Longitude: data.Longitude,
+	for sampleName, data := range allData {
+		csvFilename := sampleName + ".csv"
+		err := WriteToFile(csvFilename, data)
+		if err != nil {
+			fmt.Printf("Error writing to file %s: %v\n", csvFilename, err)
+		} else {
+			fmt.Printf("Data written to %s\n", csvFilename)
 		}
 	}
+	// Open the CSV file
+	file, err := os.Open("tree.csv")
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
 
-	return coordinates, nil
+	// Create a CSV reader
+	reader := csv.NewReader(file)
+
+	// Read the file
+	records, err := reader.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return
+	}
+
+	// Skip the header row and process the data
+	var habitats []Coordinate
+	for i, record := range records {
+		if i == 0 { // Skip header
+			continue
+		}
+
+		// Parse longitude
+		longitude, err := strconv.ParseFloat(record[0], 64) // Assuming longitude is in the first column
+		if err != nil {
+			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
+			continue
+		}
+
+		// Parse latitude
+		latitude, err := strconv.ParseFloat(record[1], 64) // Assuming latitude is in the second column
+		if err != nil {
+			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
+			continue
+		}
+
+		// Append the habitat to the slice
+		habitats = append(habitats, Coordinate{Longitude: longitude, Latitude: latitude})
+	}
+	fmt.Println("Success! Now we are ready to do something cool with our data.")
+
+	// Call your AnimateSystem function to generate images
+	images := AnimateSystem(timePoints, canvasWidth, imageFrequency) //error
+
+	fmt.Println("Images drawn!")
+
+	fmt.Println("Generating an animated GIF.")
+
+	// Save the images as an animated GIF
+	gifhelper.ImagesToGIF(images, outputFile)
+
+	fmt.Println("GIF drawn!")
+
+	fmt.Println("Simulation complete!")
 }
 
 // CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
