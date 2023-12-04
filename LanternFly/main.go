@@ -96,7 +96,7 @@ func main() {
     }
 
     // Skip the header row and process the data
-    var habitats []Habitat
+    var habitats []OrderPair
     for i, record := range records {
         if i == 0 { // Skip header
             continue
