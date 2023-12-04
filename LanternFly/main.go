@@ -50,7 +50,7 @@ func main() {
 	}
 
 	// Skip the header row and process the data
-	var habitats []Coordinate
+	var habitats []OrderedPair
 	for i, record := range records {
 		if i == 0 { // Skip header
 			continue
@@ -71,7 +71,7 @@ func main() {
 		}
 
 		// Append the habitat to the slice
-		habitats = append(habitats, Coordinate{Longitude: longitude, Latitude: latitude})
+		habitats = append(habitats, OrderedPair{Longitude: longitude, Latitude: latitude})
 	}
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
 
@@ -91,7 +91,7 @@ func main() {
 }
 
 // CreateInitialHabitat initializes a Country with flies based on the provided coordinates.
-func CreateInitialHabitat(coordinates []Coordinate) Country {
+func CreateInitialHabitat(coordinates []OrderedPair) Country {
 	country := Country{}  // Create the initial country.
 	country.width = 100.0 // Set a default width, you can adjust this value as needed
 
