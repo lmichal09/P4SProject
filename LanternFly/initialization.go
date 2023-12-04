@@ -394,10 +394,6 @@ func InitializeCountry() Country {
 	for i := 0; i < numberOfFlies; i++ {
 		country.flies[i].position.x = flies[i].RoundedLongitude
 		country.flies[i].position.y = flies[i].RoundedLatitude
-		country.flies[i].velocity.x = rand.Float64() * 0.1
-		country.flies[i].velocity.y = rand.Float64() * 0.2
-		country.flies[i].acceleration.x = rand.Float64() * rand.Float64() * 0.1
-		country.flies[i].acceleration.y = rand.Float64() * rand.Float64() * 0.2
 		country.flies[i].stage = 0
 		country.flies[i].isAlive = true
 
@@ -532,19 +528,19 @@ func FareinheitToCelsius(f float64) float64 {
 	return (f - 32) * 5 / 9
 }
 
-func main() {
-	quadrants := InitializeQuadrants()
-	for _, quadrant := range quadrants.Quadrants {
-		fmt.Printf("Quadrant ID: %d, Bottom Left (X, Y): (%.6f, %.6f), Width: %.6f, Temp: %.6f\n",
-			quadrant.id, quadrant.x, quadrant.y, quadrant.width, quadrant.temp)
-	}
+// func main() {
+// 	quadrants := InitializeQuadrants()
+// 	for _, quadrant := range quadrants.Quadrants {
+// 		fmt.Printf("Quadrant ID: %d, Bottom Left (X, Y): (%.6f, %.6f), Width: %.6f, Temp: %.6f\n",
+// 			quadrant.id, quadrant.x, quadrant.y, quadrant.width, quadrant.temp)
+// 	}
 
-	country := InitializeCountry()
-	for _, fly := range country.flies {
-		if fly.locationID == 1 {
-			fmt.Printf("Location ID: %d, Energy: %.6f\n, Position X: %.6f, PositionY: %.6f\n",
-				fly.locationID, fly.energy, fly.position.x, fly.position.y)
-		}
-	}
+// 	country := InitializeCountry()
+// 	for _, fly := range country.flies {
+// 		if fly.locationID == 1 {
+// 			fmt.Printf("Location ID: %d, Energy: %.6f\n, Position X: %.6f, PositionY: %.6f\n",
+// 				fly.locationID, fly.energy, fly.position.x, fly.position.y)
+// 		}
+// 	}
 
-}
+// }
