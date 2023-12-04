@@ -526,16 +526,19 @@ func InBounds(fly *Fly, quadrants []Quadrant) bool {
 func CopyCountry(currentCountry Country) Country {
 	var newCountry Country
 	newCountry.width = currentCountry.width
-	newCountry.height = currentCountry.height
-	newCountry.population = currentCountry.population
 
 	// Copy flies over
 	numFlies := len(currentCountry.flies)
 	newCountry.flies = make([]Fly, numFlies)
-
-	// Copy every fly's field in the new Country
 	for i := range newCountry.flies {
 		newCountry.flies[i] = CopyFly(currentCountry.flies[i])
+	}
+
+	// Copy trees over
+	numTrees := len(currentCountry.trees)
+	newCountry.trees = make([]Tree, numTrees)
+	for i := range newCountry.trees {
+		newCountry.trees[i] = CopyTree(currentCountry.trees[i])
 	}
 
 	return newCountry
