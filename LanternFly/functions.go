@@ -504,34 +504,55 @@ func InBounds(fly *Fly, quadrants []Quadrant) bool {
 	return false
 }
 
-// CopyCountry takes a Country and return a copy of all flies in this Country with fields copied over.
-func CopyCountry(currentCountry Country) Country {
-	var newCountry Country
-	newCountry.width = currentCountry.width
-
-	// copy flies over
-	numFlies := len(currentCountry.flies)
-	newCountry.flies = make([]Fly, numFlies)
-
-	//copy every fly's field in the new Country
-	for i := range newCountry.flies {
-
-		newCountry.flies[i] = CopyFly(currentCountry.flies[i])
-
+func CopyCountry(original Country) Country {
+	// Create a new Country instance
+	copyCountry := Country{
+		width: original.width,
+		flies: make([]Fly, len(original.flies)),
+		trees: make([]Tree, len(original.trees)),
 	}
-	return newCountry
 
+	// Deep copy flies
+	for i, fly := range original.flies {
+		copyCountry.flies[i] = CopyFly(fly)
+	}
+
+	// Deep copy trees
+	for i, tree := range original.trees {
+		copyCountry.trees[i] = CopyTree(tree)
+	}
+
+	return copyCountry
 }
 
-// CopyFly takes Fly object and return an a Fly with all field of input object
-func CopyFly(oldFly Fly) Fly {
-	var newFly Fly
+func CopyFly(original Fly) Fly {
+	// Create a new Fly instance
+	copyFly := Fly{
+		position: CopyOrderedPair(original.position),
+		stage:    original.stage,
+		energy:   original.energy,
+		isAlive:  original.isAlive,
+		color:    original.color,
+	}
 
-	//copy ordered pair
-	newFly.position.x = oldFly.position.x
-	newFly.position.y = oldFly.position.y
-	newFly.stage = oldFly.stage
+	return copyFly
+}
 
-	return newFly
+func CopyTree(original Tree) Tree {
+	// Create a new Tree instance
+	copyTree := Tree{
+		position: CopyOrderedPair(original.position),
+	}
 
+	return copyTree
+}
+
+func CopyOrderedPair(original OrderedPair) OrderedPair {
+	// Create a new OrderedPair instance
+	copyPair := OrderedPair{
+		x: original.x,
+		y: original.y,
+	}
+
+	return copyPair
 }
