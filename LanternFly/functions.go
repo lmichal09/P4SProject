@@ -6,7 +6,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 )
@@ -15,112 +14,48 @@ import (
 
 func SimulateMigration(initialCountry Country, numYears int, weather Weather) []Country {
 	drawPoints := make([]Country, 0)
-	currentCountry := initialCountry
-
-	for year := 0; year < numYears; year++ {
-		// Simulate the country for one year and collect daily draw points
-		finalState, yearlyDrawPoints := UpdateCountry(currentCountry, weather)
-
-		// Append the daily draw points of the year to the overall draw points
-		drawPoints = append(drawPoints, yearlyDrawPoints...)
-		// fmt.Println("d", len(drawPoints))
-
-		// Update currentCountry for the next year's simulation
+	drawPoints = append(drawPoints, initialCountry)
+	currentCountry := CopyCountry(initialCountry)
+	finalState := currentCountry
+	for year := 0; year <= numYears; year++ {
+		for i := 1; i <= 365; i++ {
+			finalState = UpdateCountry(currentCountry, weather)
+			drawPoints = append(drawPoints, finalState)
+		}
 		currentCountry = finalState
 	}
-
 	return drawPoints
 }
 
-func UpdateCountry(currCountry Country, weather Weather) (Country, []Country) {
-	newCountry := CopyCountry(currCountry) // Copy for all flies and attributes associated with each fly
+func UpdateCountry(currentCountry Country, weather Weather) Country {
+	newcountry := CopyCountry(currentCountry)
 
-	drawPoints := make([]Country, 0)
+	n := len(newcountry.flies)
 
-	var totalNewEggs []Fly
-
-	// weather
-	var trees []OrderedPair
-
-	// get tree data
-	trees = GetTreePositions(currCountry)
-
-	// loop through days
-	for i := 0; i < 365; i++ {
-		// fmt.Println("day", i)
-		// keep looping until all flies are dead, except for eggs
-		if CheckDead(newCountry.flies) {
-			// fmt.Println("all flies are dead")
-			break
-		}
-
-		// loop through flies
-		for j := 0; j < len(currCountry.flies); j++ {
-
-			if newCountry.flies[j].stage != 6 {
-				// compute degree days
-				newCountry.flies[j].energy += ComputeDegreeDay(&currCountry.flies[j], weather)
-				// fmt.Println("weather", weather.Quadrants)
-				// fmt.Println("dd", ComputeDegreeDay(&currCountry.flies[j], weather))
-
-				// update life stage
-				newCountry.flies[j].stage = UpdateLifeStage(&newCountry.flies[j])
-				if newCountry.flies[j].stage == 6 {
-					newCountry.flies[j].isAlive = false
-					continue // Skip further processing for this fly as it's now dead
-				}
-
-				// compute mortality
-				// newCountry.flies[j].isAlive = ComputeMortality(&newCountry.flies[j])
-
-				// compute movement
-				newCountry.flies[j].position = ComputeMovement(&newCountry.flies[j], trees)
-				// fmt.Println("compute", ComputeMovement(&newCountry.flies[j], trees))
-				// fmt.Println("position", newCountry.flies[j].position)
-
-				// lay eggs
-				if newCountry.flies[j].stage == 5 {
-					newEggs := ComputeFecundity(newCountry.flies[j])
-					totalNewEggs = append(totalNewEggs, newEggs...)
-				}
-			}
-
-		}
-		drawPoints = append(drawPoints, newCountry)
-		if CheckDead(newCountry.flies) {
-			fmt.Println("all flies are dead")
-		}
-		// dailyCountries = append(dailyCountries, newCountry)
-		// fmt.Println("energy", newCountry.flies[0].energy, "stage", newCountry.flies[0].stage, "alive", newCountry.flies[0].isAlive, "position", newCountry.flies[0].position)
+	for i := 0; i < n; i++ {
+		newcountry.flies[i] = UpdateFly(newcountry.flies[i], weather, newcountry.trees)
 	}
-
-	// remove all dead flies
-	for i := 0; i < len(newCountry.flies); i++ {
-		if !newCountry.flies[i].isAlive {
-			newCountry.flies = append(newCountry.flies[:i], newCountry.flies[i+1:]...)
-		}
-	}
-
-	fmt.Println("new country-should be empty", len(newCountry.flies))
-	// if len(newCountry.flies) > 0 {
-	// 	panic("something's wrong")
-	// }
-
-	// add new eggs to the country
-	newCountry.flies = append(newCountry.flies, totalNewEggs...)
-	fmt.Println("new country with eggs", len(newCountry.flies))
-
-	return newCountry, drawPoints
+	return newcountry
 }
 
-func GetTreePositions(country Country) []OrderedPair {
-	treePositions := make([]OrderedPair, len(country.trees))
+func UpdateFly(fly Fly, weather Weather, trees []Tree) Fly {
+	fly.energy = ComputeDegreeDay(&fly, weather)
 
-	for i, tree := range country.trees {
-		treePositions[i] = tree.position
+	fly.position = ComputeMovement(&fly, trees)
+	fly.stage = UpdateLifeStage(&fly)
+	fly.isAlive = ComputeMortality(&fly)
+	//fmt.Println("dd", fly.energy, "stage", fly.stage)
+	return fly
+}
+
+func GetTreePositions(country Country) []Tree {
+	var trees []Tree
+
+	for i := 0; i < len(country.trees); i++ {
+		trees = append(trees, country.trees[i])
 	}
 
-	return treePositions
+	return trees
 }
 
 // ComputeDegreeDay calculates the degree days for a single day.
@@ -186,7 +121,6 @@ func UpdateLifeStage(fly *Fly) int {
 	}
 }
 
-/*
 // ComputeMortality updates the mortality status of flies.
 // survival rate: 1: 0.6488, 2: 0.9087, 3: 0.8948, 4: 0.822
 func ComputeMortality(fly *Fly) bool {
@@ -206,7 +140,6 @@ func ComputeMortality(fly *Fly) bool {
 		return false
 	}
 }
-*/
 
 // ComputeFecundity
 // females lay one or two egg masses, each containing 30-60 eggs
@@ -241,9 +174,9 @@ func ComputeFecundity(fly Fly) []Fly {
 }
 
 // ComputeMovement updates the position of adult flies
-func ComputeMovement(fly *Fly, trees []OrderedPair) OrderedPair {
+func ComputeMovement(fly *Fly, trees []Tree) OrderedPair {
 	// Randomly decide between random movement and directed movement
-	if rand.Float64() < 0.3 {
+	if rand.Float64() < 0.7 {
 		// fmt.Println("random movement")
 		// Random movement: flies move randomly within a certain distance
 		return RandomMovement(fly)
@@ -256,8 +189,13 @@ func ComputeMovement(fly *Fly, trees []OrderedPair) OrderedPair {
 
 // RandomMovement updates the position of adult flies based on random movement
 func RandomMovement(fly *Fly) OrderedPair {
-	// TODO: Implement random movement logic
-	maxDistance := 10.0                   // Maximum distance for random movement (adjust as needed)
+	var maxDistance float64
+	if rand.Float64() < 0.7 {
+		maxDistance = 9000.0
+	} else {
+		maxDistance = 1000.0
+	}
+
 	angle := rand.Float64() * 2 * math.Pi // Random angle between 0 and 2*Pi radians
 
 	// fmt.Println("original", fly.position.x, fly.position.y)
@@ -270,30 +208,22 @@ func RandomMovement(fly *Fly) OrderedPair {
 }
 
 // DirectedMovement updates the position of adult flies based on directed movement
-func DirectedMovement(fly *Fly, trees []OrderedPair) OrderedPair {
+func DirectedMovement(fly *Fly, trees []Tree) OrderedPair {
 	// Find the nearest host tree
 	nearestTree := FindNearestTree(fly.position, trees)
 
-	distance := distance(fly.position, nearestTree)
-
-	// Calculate the direction (angle) from fly to the nearest host tree
 	dx := nearestTree.x - fly.position.x
 	dy := nearestTree.y - fly.position.y
-	directionx := dx / distance
-	directiony := dy / distance
-
-	// TODO: Implement directed movement logic
-	// You can define the speed and adjust the movement here
 
 	// Calculate the new position based on directed movement towards the nearest tree
-	newX := fly.position.x + rand.Float64()*distance*(directionx)
-	newY := fly.position.y + rand.Float64()*distance*(directiony)
+	newX := fly.position.x + rand.Float64()*dx
+	newY := fly.position.y + rand.Float64()*dy
 
 	return OrderedPair{newX, newY}
 }
 
 // FindNearestTree finds the nearest host tree to a given fly's position.
-func FindNearestTree(flyPosition OrderedPair, trees []OrderedPair) OrderedPair {
+func FindNearestTree(flyPosition OrderedPair, trees []Tree) OrderedPair {
 	if len(trees) == 0 {
 		// Handle the case where there are no trees
 		return OrderedPair{0, 0} // You can change this default value
@@ -301,30 +231,18 @@ func FindNearestTree(flyPosition OrderedPair, trees []OrderedPair) OrderedPair {
 
 	// Initialize variables to store the nearest tree and its distance
 	nearestTree := trees[0]
-	minDistance := distance(flyPosition, nearestTree)
+	minDistance := distance(flyPosition, nearestTree.position)
 
 	// Iterate through the list of trees to find the nearest one
 	for _, tree := range trees {
-		d := distance(flyPosition, tree)
+		d := distance(flyPosition, tree.position)
 		if d < minDistance {
 			minDistance = d
 			nearestTree = tree
 		}
 	}
 
-	return nearestTree
-}
-
-// FindHostDirection calculates the direction (angle in radians) from fly to the nearest host tree.
-func FindHostDirection(flyPosition OrderedPair, nearestTree OrderedPair) float64 {
-	// Calculate the direction from fly to nearest tree
-	dy := nearestTree.y - flyPosition.y
-	dx := nearestTree.x - flyPosition.x
-
-	// Calculate the angle in radians
-	direction := math.Atan2(dy, dx)
-
-	return direction
+	return nearestTree.position
 }
 
 func GetQuadrant(fly *Fly, quadrants []Quadrant) int {
@@ -341,11 +259,6 @@ func GetQuadrant(fly *Fly, quadrants []Quadrant) int {
 			return q.id
 		}
 	}
-
-	// if the fly is out of bounds, panic
-	// if !InBounds(fly, quadrants) {
-	// 	panic("fly is out of simulation bounds")
-	// }
 
 	return -1 // Placeholder
 }
