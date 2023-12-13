@@ -6,9 +6,9 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
+	"runtime"
 )
 
 // SimulateMigration
@@ -31,20 +31,53 @@ func SimulateMigration(initialCountry Country, numYears int, weather Weather) []
 func UpdateCountry(currentCountry Country, weather Weather) Country {
 	newcountry := CopyCountry(currentCountry)
 
-	n := len(newcountry.flies)
+	numProcs := runtime.NumCPU()
 
-	for i := 0; i < n; i++ {
-		newcountry.flies[i] = UpdateFly(newcountry.flies[i], weather, newcountry.trees)
-	}
+	// update flies
+	UpdateFlyMultiProcs(newcountry.flies, weather, newcountry.trees, numProcs)
+
+	// n := len(newcountry.flies)
+
+	// for i := 0; i < n; i++ {
+	// 	newcountry.flies[i] = UpdateFly(newcountry.flies[i], weather, newcountry.trees)
+	// }
 	return newcountry
+}
+
+// UpdateFlyMultiProcs updates the flies in parallel
+func UpdateFlyMultiProcs(fly []Fly, weather Weather, trees []Tree, numProcs int) {
+	numFlies := len(fly)
+
+	finished := make(chan bool)
+
+	for i := 0; i < numProcs; i++ {
+		// each processor getting ~ numParticles/numProcs particles
+
+		startIndex := i * numFlies / numProcs
+		endIndex := (i + 1) * numFlies / numProcs
+
+		go UpdateFlySingleProc(fly[startIndex:endIndex], weather, trees, finished)
+	}
+
+	for i := 0; i < numProcs; i++ {
+		<-finished
+	}
+
+}
+
+func UpdateFlySingleProc(fly []Fly, weather Weather, trees []Tree, finished chan bool) {
+	for i := range fly {
+		fly[i] = UpdateFly(fly[i], weather, trees)
+	}
+	finished <- true
 }
 
 func UpdateFly(fly Fly, weather Weather, trees []Tree) Fly {
 	fly.energy = ComputeDegreeDay(&fly, weather)
-
 	fly.position = ComputeMovement(&fly, trees)
 	fly.stage = UpdateLifeStage(&fly)
-	fmt.Println("dd", fly.energy, "stage", fly.stage)
+	fly.isAlive = ComputeMortality(&fly)
+	//fmt.Println("dd", fly.energy, "stage", fly.stage)
 	return fly
 }
 
@@ -121,7 +154,6 @@ func UpdateLifeStage(fly *Fly) int {
 	}
 }
 
-/*
 // ComputeMortality updates the mortality status of flies.
 // survival rate: 1: 0.6488, 2: 0.9087, 3: 0.8948, 4: 0.822
 func ComputeMortality(fly *Fly) bool {
@@ -141,7 +173,6 @@ func ComputeMortality(fly *Fly) bool {
 		return false
 	}
 }
-*/
 
 // ComputeFecundity
 // females lay one or two egg masses, each containing 30-60 eggs
@@ -178,7 +209,7 @@ func ComputeFecundity(fly Fly) []Fly {
 // ComputeMovement updates the position of adult flies
 func ComputeMovement(fly *Fly, trees []Tree) OrderedPair {
 	// Randomly decide between random movement and directed movement
-	if rand.Float64() < 0.3 {
+	if rand.Float64() < 0.7 {
 		// fmt.Println("random movement")
 		// Random movement: flies move randomly within a certain distance
 		return RandomMovement(fly)
@@ -191,8 +222,13 @@ func ComputeMovement(fly *Fly, trees []Tree) OrderedPair {
 
 // RandomMovement updates the position of adult flies based on random movement
 func RandomMovement(fly *Fly) OrderedPair {
-	// TODO: Implement random movement logic
-	maxDistance := 10.0                   // Maximum distance for random movement (adjust as needed)
+	var maxDistance float64
+	if rand.Float64() < 0.7 {
+		maxDistance = 9000.0
+	} else {
+		maxDistance = 1000.0
+	}
+
 	angle := rand.Float64() * 2 * math.Pi // Random angle between 0 and 2*Pi radians
 
 	// fmt.Println("original", fly.position.x, fly.position.y)
@@ -209,15 +245,8 @@ func DirectedMovement(fly *Fly, trees []Tree) OrderedPair {
 	// Find the nearest host tree
 	nearestTree := FindNearestTree(fly.position, trees)
 
-	//	distance := distance(fly.position, nearestTree)
-
-	// Calculate the direction (angle) from fly to the nearest host tree
-
 	dx := nearestTree.x - fly.position.x
 	dy := nearestTree.y - fly.position.y
-
-	// TODO: Implement directed movement logic
-	// You can define the speed and adjust the movement here
 
 	// Calculate the new position based on directed movement towards the nearest tree
 	newX := fly.position.x + rand.Float64()*dx
@@ -263,11 +292,6 @@ func GetQuadrant(fly *Fly, quadrants []Quadrant) int {
 			return q.id
 		}
 	}
-
-	// if the fly is out of bounds, panic
-	// if !InBounds(fly, quadrants) {
-	// 	panic("fly is out of simulation bounds")
-	// }
 
 	return -1 // Placeholder
 }
