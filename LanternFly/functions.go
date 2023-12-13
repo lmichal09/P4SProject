@@ -8,6 +8,7 @@ package main
 import (
 	"math"
 	"math/rand"
+	"runtime"
 )
 
 // SimulateMigration
@@ -30,17 +31,48 @@ func SimulateMigration(initialCountry Country, numYears int, weather Weather) []
 func UpdateCountry(currentCountry Country, weather Weather) Country {
 	newcountry := CopyCountry(currentCountry)
 
-	n := len(newcountry.flies)
+	numProcs := runtime.NumCPU()
 
-	for i := 0; i < n; i++ {
-		newcountry.flies[i] = UpdateFly(newcountry.flies[i], weather, newcountry.trees)
-	}
+	// update flies
+	UpdateFlyMultiProcs(newcountry.flies, weather, newcountry.trees, numProcs)
+
+	// n := len(newcountry.flies)
+
+	// for i := 0; i < n; i++ {
+	// 	newcountry.flies[i] = UpdateFly(newcountry.flies[i], weather, newcountry.trees)
+	// }
 	return newcountry
+}
+
+func UpdateFlyMultiProcs(fly []Fly, weather Weather, trees []Tree, numProcs int) {
+	numFlies := len(fly)
+
+	finished := make(chan bool)
+
+	for i := 0; i < numProcs; i++ {
+		// each processor getting ~ numParticles/numProcs particles
+
+		startIndex := i * numFlies / numProcs
+		endIndex := (i + 1) * numFlies / numProcs
+
+		go UpdateFlySingleProc(fly[startIndex:endIndex], weather, trees, finished)
+	}
+
+	for i := 0; i < numProcs; i++ {
+		<-finished
+	}
+
+}
+
+func UpdateFlySingleProc(fly []Fly, weather Weather, trees []Tree, finished chan bool) {
+	for i := range fly {
+		fly[i] = UpdateFly(fly[i], weather, trees)
+	}
+	finished <- true
 }
 
 func UpdateFly(fly Fly, weather Weather, trees []Tree) Fly {
 	fly.energy = ComputeDegreeDay(&fly, weather)
-
 	fly.position = ComputeMovement(&fly, trees)
 	fly.stage = UpdateLifeStage(&fly)
 	fly.isAlive = ComputeMortality(&fly)
