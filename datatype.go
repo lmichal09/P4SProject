@@ -2,6 +2,7 @@ package main
 
 type Country struct {
 	width float64
+	height float64
 	flies []Fly
 	trees []Tree
 }
@@ -85,9 +86,9 @@ const (
 
 	earthRadius float64 = 6371 // km
 
-	minLat float64 = 31.33   // Southernmost point in the US
-	maxLat float64 = 45.71   // Northernmost point in the contiguous US
-	minLon float64 = -123.27 // Westernmost point in the contiguous US
-	maxLon float64 = -68.93  // Easternmost point in the contiguous US
+	minLat float64 = -11708.33581760135 // Southernmost point in the US
+	maxLat float64 = -5352.162607271911 // Northernmost point in the contiguous US
+	minLon float64 = 3483.737051774025  // Westernmost point in the contiguous US
+	maxLon float64 = 5082.720096922779  // Easternmost point in the contiguous US
 
 )
