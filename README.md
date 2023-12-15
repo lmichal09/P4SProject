@@ -9,3 +9,5 @@ To run simulation:
 3) Open in Visual Studios
 4) Navigate to go/src in Terminal
 5) Then type go build and type ./LanternFly and hit enter. 
+
+Attached is the code demonstration of our code and what it looks like: https://drive.google.com/file/d/1-qEsGAtsLLsVtCm4fkO0C8uZSR7M8En9/view?usp=sharing 
