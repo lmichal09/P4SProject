@@ -18,20 +18,20 @@ func main() {
 	initialCountry := InitializeCountry()
 	fmt.Println("Country initialized.")
 
-	numYears := 2
+	numYears := 1
 
-	weather := InitializeWeather()
-	// fmt.Println(weather)
+	weather := InitializeQuadrants()
 	fmt.Println("Quadrants initialized.")
 
 	timePoints := SimulateMigration(initialCountry, numYears, weather)
 	fmt.Println("Migration simulated.")
 
-	canvasWidth := 1000
+	canvasWidth := 10000
+	canvasHeight := 10000
 	imageFrequency := 30
 
 	// Call your AnimateSystem function to generate images
-	images := AnimateSystem(timePoints, canvasWidth, imageFrequency) //error
+	images := AnimateSystem(timePoints, int(canvasWidth), int(canvasHeight), imageFrequency) //error
 
 	fmt.Println("Images drawn!")
 

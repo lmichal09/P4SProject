@@ -6,7 +6,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"runtime"
@@ -43,13 +42,9 @@ func SimulateMigration(initialCountry Country, numYears int, weather Weather) []
 
 		}
 		// collect all eggs
-
-		fmt.Println("total eggs", len(totalEggs))
-
 		currentCountry = finalState
 
 		if CheckDead(finalState.flies) {
-			fmt.Println("All flies are dead!!!!!!!!!!")
 			finalState.flies = totalEggs
 		}
 	}
