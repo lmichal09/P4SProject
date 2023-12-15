@@ -195,7 +195,11 @@ func LoadWeatherData(folder string) (map[string]OrderedPair, error) {
 
 	//List of specific files to process
 	specificFiles := map[string]bool{
-		"AZ.csv": true, "CT.csv": true, "DC.csv": true, "DE.csv": true, "IN.csv": true, "KS.csv": true, "KY.csv": true, "MA.csv": true, "MD.csv": true, "ME.csv": true, "MI.csv": true, "MO.csv": true, "NC.csv": true, "NJ.csv": true, "NM.csv": true, "NY.csv": true, "OH.csv": true, "OR.csv": true, "PA.csv": true, "RI.csv": true, "SC.csv": true, "UT.csv": true, "VA.csv": true, "VT.csv": true, "WV.csv": true,
+		"AZ.csv": true, "CT.csv": true, "DC.csv": true, "DE.csv": true, "IN.csv": true,
+		"KS.csv": true, "KY.csv": true, "MA.csv": true, "MD.csv": true, "ME.csv": true,
+		"MI.csv": true, "MO.csv": true, "NC.csv": true, "NJ.csv": true, "NM.csv": true,
+		"NY.csv": true, "OH.csv": true, "OR.csv": true, "PA.csv": true, "RI.csv": true,
+		"SC.csv": true, "UT.csv": true, "VA.csv": true, "VT.csv": true, "WV.csv": true,
 	}
 
 	weatherData := make(map[string]OrderedPair)
