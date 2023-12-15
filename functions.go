@@ -6,6 +6,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"runtime"
@@ -19,11 +20,38 @@ func SimulateMigration(initialCountry Country, numYears int, weather Weather) []
 	currentCountry := CopyCountry(initialCountry)
 	finalState := currentCountry
 	for year := 0; year <= numYears; year++ {
+		var totalEggs []Fly
 		for i := 1; i <= 365; i++ {
+			var eggs []Fly
 			finalState = UpdateCountry(currentCountry, weather)
+			// if adult, lay eggs
+			// collect all eggs
+			if finalState.flies[i].stage == 5 {
+				eggs = ComputeFecundity(finalState.flies[i])
+				totalEggs = append(totalEggs, eggs...)
+			}
+
 			drawPoints = append(drawPoints, finalState)
+
+			if i > 214 { // Days from May to Dec
+				for i := range finalState.flies {
+					if finalState.flies[i].isAlive == true && finalState.flies[i].stage != 0 {
+						finalState.flies[i].isAlive = false
+					}
+				}
+			}
+
 		}
+		// collect all eggs
+
+		fmt.Println("total eggs", len(totalEggs))
+
 		currentCountry = finalState
+
+		if CheckDead(finalState.flies) {
+			fmt.Println("All flies are dead!!!!!!!!!!")
+			finalState.flies = totalEggs
+		}
 	}
 	return drawPoints
 }
@@ -79,6 +107,54 @@ func UpdateFly(fly Fly, weather Weather, trees []Tree) Fly {
 	fly.isAlive = ComputeMortality(&fly)
 	//fmt.Println("dd", fly.energy, "stage", fly.stage)
 	return fly
+}
+
+// phiE calculates the given function
+func phiE(d float64) float64 {
+	// Define the constant value
+	const k = 0.012
+
+	// Calculate each term of the function
+	term1 := 1 / (k*math.Exp(d-1) - 1)
+	term2 := 1 / (k*math.Exp(d) - 1)
+
+	// Return the absolute difference
+	return math.Abs(term1 - term2)
+}
+
+// ComputeFecundity
+// females lay one or two egg masses, each containing 30-60 eggs
+func ComputeFecundity(fly Fly) []Fly {
+	newFly := make([]Fly, 0)
+
+	// TODO: probability of laying eggs z
+	probToLayEggs := phiE(fly.energy)
+
+	if rand.Float64() > probToLayEggs {
+		// randomly choose the number of egg masses
+		numEggMasses := rand.Intn(2) + 1
+
+		// randomly choose the number of eggs in each egg mass
+		numEggs := rand.Intn(30) + 30
+
+		totalEggs := numEggMasses * numEggs
+
+		// location of the eggs is the location of the adult
+		for i := 0; i < totalEggs; i++ {
+			newEgg := Fly{
+				position: OrderedPair{
+					x: fly.position.x,
+					y: fly.position.y,
+				},
+				stage:   0,
+				energy:  0,
+				isAlive: true,
+			}
+			newFly = append(newFly, newEgg)
+		}
+	}
+
+	return newFly
 }
 
 func GetTreePositions(country Country) []Tree {
@@ -174,38 +250,6 @@ func ComputeMortality(fly *Fly) bool {
 	}
 }
 
-// ComputeFecundity
-// females lay one or two egg masses, each containing 30-60 eggs
-func ComputeFecundity(fly Fly) []Fly {
-	newFly := make([]Fly, 0)
-
-	// TODO: probability of laying eggs 10.5%
-
-	// randomly choose the number of egg masses
-	numEggMasses := rand.Intn(2) + 1
-
-	// randomly choose the number of eggs in each egg mass
-	numEggs := rand.Intn(30) + 30
-
-	totalEggs := numEggMasses * numEggs
-
-	// location of the eggs is the location of the adult
-	for i := 0; i < totalEggs; i++ {
-		newEgg := Fly{
-			position: OrderedPair{
-				x: fly.position.x,
-				y: fly.position.y,
-			},
-			stage:   0,
-			energy:  0,
-			isAlive: true,
-		}
-		newFly = append(newFly, newEgg)
-	}
-
-	return newFly
-}
-
 // ComputeMovement updates the position of adult flies
 func ComputeMovement(fly *Fly, trees []Tree) OrderedPair {
 	// Randomly decide between random movement and directed movement
@@ -224,9 +268,9 @@ func ComputeMovement(fly *Fly, trees []Tree) OrderedPair {
 func RandomMovement(fly *Fly) OrderedPair {
 	var maxDistance float64
 	if rand.Float64() < 0.7 {
-		maxDistance = 9000.0
+		maxDistance = 90.0
 	} else {
-		maxDistance = 1000.0
+		maxDistance = 10.0
 	}
 
 	angle := rand.Float64() * 2 * math.Pi // Random angle between 0 and 2*Pi radians

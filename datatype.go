@@ -1,10 +1,10 @@
 package main
 
 type Country struct {
-	width float64
+	width  float64
 	height float64
-	flies []Fly
-	trees []Tree
+	flies  []Fly
+	trees  []Tree
 }
 
 type Tree struct {
@@ -45,11 +45,12 @@ type OrderedPair struct {
 
 // Quadrant is an object representing a sub-square within a larger universe.
 type Quadrant struct {
-	x     float64 //bottom left corner x coordinate
-	y     float64 //bottom right corner y coordinate
-	width float64
-	id    int
-	temp  float64
+	x      float64 //bottom left corner x coordinate
+	y      float64 //bottom right corner y coordinate
+	width  float64
+	height float64
+	id     int
+	temp   float64
 }
 
 // SampleData represents the structure of the data in the file
@@ -71,11 +72,11 @@ type SampleData struct {
 }
 
 const (
-	instar1To2Threshold     float64 = 6.6
-	instar2To3Threshold     float64 = 10.7
-	instar3To4Threshold     float64 = 18.5
-	instar4ToAdultThreshold float64 = 24.5
-	adultToDieThreshold     float64 = 35.0
+	instar1To2Threshold     float64 = 166.6
+	instar2To3Threshold     float64 = 208.7
+	instar3To4Threshold     float64 = 410.5
+	instar4ToAdultThreshold float64 = 620
+	adultToDieThreshold     float64 = 800
 
 	// survival rate: 1: 0.6488, 2: 0.9087, 3: 0.8948, 4: 0.822
 	sRI1 float64 = 0.6488
@@ -86,9 +87,20 @@ const (
 
 	earthRadius float64 = 6371 // km
 
-	minLat float64 = -11708.33581760135 // Southernmost point in the US
-	maxLat float64 = -5352.162607271911 // Northernmost point in the contiguous US
-	minLon float64 = 3483.737051774025  // Westernmost point in the contiguous US
-	maxLon float64 = 5082.720096922779  // Easternmost point in the contiguous US
+	minLat = 31.33   // Southernmost point in the US
+	maxLat = 45.71   // Northernmost point in the contiguous US
+	minLon = -123.27 // Westernmost point in the contiguous US
+	maxLon = -68.93
 
+	longtitude1 float64 = -123.27
+	longtitude2 float64 = -112.402
+	longtitude3 float64 = -101.534
+	longtitude4 float64 = -90.666
+	longtitude5 float64 = -79.798
+	longitude6  float64 = -68.93
+	latitude1   float64 = 31.33
+	latitude2   float64 = 34.206
+	latitude3   float64 = 37.082
+	latitude4   float64 = 39.958
+	latitude5   float64 = 42.834
 )

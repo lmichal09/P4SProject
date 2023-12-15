@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -232,10 +231,10 @@ func LoadWeatherData(folder string) (map[string]OrderedPair, error) {
 // InitializeQuadrants creates a 5x5 grid of Quadrants
 func InitializeQuadrants() Weather {
 	totalWidth := maxLon - minLon
-	//totalHeight := maxLat - minLat
+	totalHeight := maxLat - minLat
 
 	quadrantWidth := totalWidth / 5
-	//quadrantHeight := totalHeight/ 5
+	quadrantHeight := totalHeight / 5
 
 	var quadrants []Quadrant
 	quadrantID := 1
@@ -243,8 +242,8 @@ func InitializeQuadrants() Weather {
 	// First row:
 	for i := 0; i < 5; i++ {
 		quadrant := Quadrant{
-			x:     minLat + (maxLat-minLat)/5*4,
-			y:     minLon + float64(i)*quadrantWidth,
+			x:     minLon + float64(i)*quadrantWidth,
+			y:     minLat + quadrantHeight*4,
 			width: quadrantWidth,
 			id:    quadrantID,
 			temp:  0.0,
@@ -256,8 +255,8 @@ func InitializeQuadrants() Weather {
 	// Second row:
 	for i := 0; i < 5; i++ {
 		quadrant := Quadrant{
-			x:     minLat + (maxLat-minLat)/5*3,
-			y:     minLon + float64(i)*quadrantWidth,
+			x:     minLon + float64(i)*quadrantWidth,
+			y:     minLat + quadrantHeight*3,
 			width: quadrantWidth,
 			id:    quadrantID,
 			temp:  0.0,
@@ -269,8 +268,8 @@ func InitializeQuadrants() Weather {
 	// Third row:
 	for i := 0; i < 5; i++ {
 		quadrant := Quadrant{
-			x:     minLat + (maxLat-minLat)/5*2,
-			y:     minLon + float64(i)*quadrantWidth,
+			x:     minLon + float64(i)*quadrantWidth,
+			y:     minLat + quadrantHeight*2,
 			width: quadrantWidth,
 			id:    quadrantID,
 			temp:  0.0,
@@ -282,8 +281,8 @@ func InitializeQuadrants() Weather {
 	// Fourth row:
 	for i := 0; i < 5; i++ {
 		quadrant := Quadrant{
-			x:     minLat + (maxLat-minLat)/5*1,
-			y:     minLon + float64(i)*quadrantWidth,
+			x:     minLon + float64(i)*quadrantWidth,
+			y:     minLat + quadrantHeight,
 			width: quadrantWidth,
 			id:    quadrantID,
 			temp:  0.0,
@@ -295,8 +294,8 @@ func InitializeQuadrants() Weather {
 	// Fifth row:
 	for i := 0; i < 5; i++ {
 		quadrant := Quadrant{
-			x:     minLat + (maxLat-minLat)/5*0,
-			y:     minLon + float64(i)*quadrantWidth,
+			x:     minLon + float64(i)*quadrantWidth,
+			y:     minLat,
 			width: quadrantWidth,
 			id:    quadrantID,
 			temp:  0.0,
@@ -381,19 +380,19 @@ func ReadTrees(filePath string) ([]OrderedPair, error) {
 			continue
 		}
 
-		// Trim spaces and parse longitude
-		longitudeStr := strings.TrimSpace(record[0])
-		longitude, err := strconv.ParseFloat(longitudeStr, 64)
+		// Trim spaces and parse Latitude
+		latitudeStr := strings.TrimSpace(record[0])
+		latitude, err := strconv.ParseFloat(latitudeStr, 64)
 		if err != nil {
-			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
+			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
 			continue
 		}
 
 		// Trim spaces and parse latitude
-		latitudeStr := strings.TrimSpace(record[1])
-		latitude, err := strconv.ParseFloat(latitudeStr, 64)
+		longitudeStr := strings.TrimSpace(record[1])
+		longitude, err := strconv.ParseFloat(longitudeStr, 64)
 		if err != nil {
-			fmt.Printf("Error parsing latitude in row %d: %v\n", i+1, err)
+			fmt.Printf("Error parsing longitude in row %d: %v\n", i+1, err)
 			continue
 		}
 
@@ -405,8 +404,8 @@ func ReadTrees(filePath string) ([]OrderedPair, error) {
 
 func InitializeCountry() Country {
 	var country Country
-	country.width = maxLon - minLon
-	country.height = maxLat - minLat
+	country.width = maxLat - minLat
+	country.height = maxLon - minLon
 
 	// Initialize trees
 	tree, err := ReadTrees("Data/processed_data.csv")
@@ -423,20 +422,18 @@ func InitializeCountry() Country {
 		country.trees[i].position.y = tree[i].y
 	}
 
-	// Convert into equirectangular projection
-	for i := 0; i < numberOfTree; i++ {
-		country.trees[i].position = equirectangularProjection(country.trees[i].position)
-	}
-
 	// Remove trees out of range
 	for i := 0; i < numberOfTree; i++ {
-		if country.trees[i].position.x < minLat || country.trees[i].position.x > maxLat || country.trees[i].position.y < minLon || country.trees[i].position.y > maxLon {
-			// append
+		if country.trees[i].position.y < minLat || country.trees[i].position.y > maxLat ||
+			country.trees[i].position.x < minLon || country.trees[i].position.x > maxLon {
 			country.trees = append(country.trees[:i], country.trees[i+1:]...)
 			i--
 			numberOfTree--
 		}
 	}
+
+	country.trees = trees
+	fmt.Println(len(country.trees))
 
 	// Initialize flies
 	flies, err := ReadSampleDataFromFile("Data/lydetext.txt")
@@ -450,15 +447,9 @@ func InitializeCountry() Country {
 
 	// Initialize flies
 	for i := 0; i < numberOfFlies; i++ {
-		country.flies[i].position.x = flies[i].RoundedLatitude
-		country.flies[i].position.y = flies[i].RoundedLongitude
+		country.flies[i].position.x = flies[i].RoundedLongitude
+		country.flies[i].position.y = flies[i].RoundedLatitude
 		country.flies[i].stage = 0
-	}
-
-	// Change the positions to equirectangular projection
-
-	for i := 0; i < numberOfFlies; i++ {
-		country.flies[i].position = equirectangularProjection(country.flies[i].position)
 	}
 
 	// Only 10% of the flies are alive
@@ -482,55 +473,55 @@ func InitializeCountry() Country {
 
 	// Add Location ID:
 	for i := 0; i < numberOfFlies; i++ {
-		if country.flies[i].position.x > -6623.397249337799 && country.flies[i].position.y > 3483.737051774025 && country.flies[i].position.y < 3803.533660803776 {
+		if country.flies[i].position.y > 42.834 && country.flies[i].position.x > -123.27 && country.flies[i].position.y < -112.402 {
 			country.flies[i].locationID = 1
-		} else if country.flies[i].position.x > -6623.397249337799 && country.flies[i].position.y > 3803.533660803776 && country.flies[i].position.y < 4123.330269833527 {
+		} else if country.flies[i].position.y > 42.834 && country.flies[i].position.x > -112.402 && country.flies[i].position.x < -101.53399999999999 {
 			country.flies[i].locationID = 2
-		} else if country.flies[i].position.x > -6623.397249337799 && country.flies[i].position.y > 4123.330269833527 && country.flies[i].position.y < 4443.126878863278 {
+		} else if country.flies[i].position.y > 42.834 && country.flies[i].position.x > -101.53399999999999 && country.flies[i].position.x < -90.666 {
 			country.flies[i].locationID = 3
-		} else if country.flies[i].position.x > -6623.397249337799 && country.flies[i].position.y > 4443.126878863278 && country.flies[i].position.y < 4762.923487893029 {
+		} else if country.flies[i].position.y > 42.834 && country.flies[i].position.x > -90.666 && country.flies[i].position.x < -79.798 {
 			country.flies[i].locationID = 4
-		} else if country.flies[i].position.x > -6623.397249337799 && country.flies[i].position.y > 4762.923487893029 && country.flies[i].position.y < 5082.720096922779 {
+		} else if country.flies[i].position.y > 42.834 && country.flies[i].position.x > -79.798 && country.flies[i].position.x < maxLat {
 			country.flies[i].locationID = 5
-		} else if country.flies[i].position.x > -7894.6318914036865 && country.flies[i].position.y > 3483.737051774025 && country.flies[i].position.y < 3803.533660803776 {
+		} else if country.flies[i].position.y > 39.958 && country.flies[i].position.x > -123.27 && country.flies[i].position.y < -112.402 {
 			country.flies[i].locationID = 6
-		} else if country.flies[i].position.x > -7894.6318914036865 && country.flies[i].position.y > 3803.533660803776 && country.flies[i].position.y < 4123.330269833527 {
+		} else if country.flies[i].position.y > 39.958 && country.flies[i].position.x > -112.402 && country.flies[i].position.x < -101.53399999999999 {
 			country.flies[i].locationID = 7
-		} else if country.flies[i].position.x > -7894.6318914036865 && country.flies[i].position.y > 4123.330269833527 && country.flies[i].position.y < 4443.126878863278 {
+		} else if country.flies[i].position.y > 39.958 && country.flies[i].position.x > -101.53399999999999 && country.flies[i].position.x < -90.666 {
 			country.flies[i].locationID = 8
-		} else if country.flies[i].position.x > -7894.6318914036865 && country.flies[i].position.y > 4443.126878863278 && country.flies[i].position.y < 4762.923487893029 {
+		} else if country.flies[i].position.y > 39.958 && country.flies[i].position.x > -90.666 && country.flies[i].position.x < -79.798 {
 			country.flies[i].locationID = 9
-		} else if country.flies[i].position.x > -7894.6318914036865 && country.flies[i].position.y > 4762.923487893029 && country.flies[i].position.y < 5082.720096922779 {
+		} else if country.flies[i].position.y > 39.958 && country.flies[i].position.x > -79.798 && country.flies[i].position.x < maxLat {
 			country.flies[i].locationID = 10
-		} else if country.flies[i].position.x > -9165.8665334695745 && country.flies[i].position.y > 3483.737051774025 && country.flies[i].position.y < 3803.533660803776 {
+		} else if country.flies[i].position.y > 37.082 && country.flies[i].position.x > -123.27 && country.flies[i].position.y < -112.402 {
 			country.flies[i].locationID = 11
-		} else if country.flies[i].position.x > -9165.866533469574 && country.flies[i].position.y > 3803.533660803776 && country.flies[i].position.y < 4123.330269833527 {
+		} else if country.flies[i].position.y > 37.082 && country.flies[i].position.x > -112.402 && country.flies[i].position.x < -101.53399999999999 {
 			country.flies[i].locationID = 12
-		} else if country.flies[i].position.x > -9165.866533469574 && country.flies[i].position.y > 4123.330269833527 && country.flies[i].position.y < 4443.126878863278 {
+		} else if country.flies[i].position.y > 37.082 && country.flies[i].position.x > -101.53399999999999 && country.flies[i].position.x < -90.666 {
 			country.flies[i].locationID = 13
-		} else if country.flies[i].position.x > -9165.866533469574 && country.flies[i].position.y > 4443.126878863278 && country.flies[i].position.y < 4762.923487893029 {
+		} else if country.flies[i].position.y > 37.082 && country.flies[i].position.x > -90.666 && country.flies[i].position.x < -79.798 {
 			country.flies[i].locationID = 14
-		} else if country.flies[i].position.x > -9165.866533469574 && country.flies[i].position.y > 4762.923487893029 && country.flies[i].position.y < 5082.720096922779 {
+		} else if country.flies[i].position.y > 37.082 && country.flies[i].position.x > -79.798 && country.flies[i].position.x < maxLat {
 			country.flies[i].locationID = 15
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 3483.737051774025 && country.flies[i].position.y < 3803.533660803776 {
+		} else if country.flies[i].position.y > 34.205999999999996 && country.flies[i].position.x > -123.27 && country.flies[i].position.y < -112.402 {
 			country.flies[i].locationID = 16
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 3803.533660803776 && country.flies[i].position.y < 4123.330269833527 {
+		} else if country.flies[i].position.y > 34.205999999999996 && country.flies[i].position.x > -112.402 && country.flies[i].position.x < -101.53399999999999 {
 			country.flies[i].locationID = 17
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 4123.330269833527 && country.flies[i].position.y < 4443.126878863278 {
+		} else if country.flies[i].position.y > 34.205999999999996 && country.flies[i].position.x > -101.53399999999999 && country.flies[i].position.x < -90.666 {
 			country.flies[i].locationID = 18
-		} else if country.flies[i].position.x > -10437.1011755354639 && country.flies[i].position.y > 4443.126878863278 && country.flies[i].position.y < 4762.923487893029 {
+		} else if country.flies[i].position.y > 34.205999999999996 && country.flies[i].position.x > -90.666 && country.flies[i].position.x < -79.798 {
 			country.flies[i].locationID = 19
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 4762.923487893029 && country.flies[i].position.y < 5082.720096922779 {
+		} else if country.flies[i].position.y > 34.205999999999996 && country.flies[i].position.x > -79.798 && country.flies[i].position.x < maxLat {
 			country.flies[i].locationID = 20
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 3483.737051774025 && country.flies[i].position.y < 3803.533660803776 {
+		} else if country.flies[i].position.y > 31.33 && country.flies[i].position.x > -123.27 && country.flies[i].position.y < -112.402 {
 			country.flies[i].locationID = 21
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 3803.533660803776 && country.flies[i].position.y < 4123.330269833527 {
+		} else if country.flies[i].position.y > 31.33 && country.flies[i].position.x > -112.402 && country.flies[i].position.x < -101.53399999999999 {
 			country.flies[i].locationID = 22
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 4123.330269833527 && country.flies[i].position.y < 4443.126878863278 {
+		} else if country.flies[i].position.y > 31.33 && country.flies[i].position.x > -101.53399999999999 && country.flies[i].position.x < -90.666 {
 			country.flies[i].locationID = 23
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 4443.126878863278 && country.flies[i].position.y < 4762.923487893029 {
+		} else if country.flies[i].position.y > 31.33 && country.flies[i].position.x > -90.666 && country.flies[i].position.x < -79.798 {
 			country.flies[i].locationID = 24
-		} else if country.flies[i].position.x > -10437.101175535463 && country.flies[i].position.y > 4762.923487893029 && country.flies[i].position.y < 5082.720096922779 {
+		} else if country.flies[i].position.y > 31.33 && country.flies[i].position.x > -79.798 && country.flies[i].position.x < maxLat {
 			country.flies[i].locationID = 25
 		}
 	}
@@ -607,17 +598,4 @@ func randomInRange(max, min float64) float64 {
 
 func FareinheitToCelsius(f float64) float64 {
 	return (f - 32) * 5 / 9
-}
-
-func toRadians(degrees float64) float64 {
-	return degrees * math.Pi / 180
-}
-
-func equirectangularProjection(position OrderedPair) OrderedPair {
-	latRad := toRadians(position.x)
-	lonRad := toRadians(position.y)
-
-	x := earthRadius * lonRad * math.Cos(latRad)
-	y := earthRadius * latRad
-	return OrderedPair{x: x, y: y}
 }
