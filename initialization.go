@@ -13,7 +13,10 @@ import (
 	"time"
 )
 
+// parseInteger takes a string input, converts it to an integer using the strconv.Atoi function, and returns the integer value.
+// If the conversion fails, an error message is returned.
 func parseInteger(s string) (int, error) {
+	// Convert string to integer.
 	val, err := strconv.Atoi(s)
 	if err != nil {
 		return 0, fmt.Errorf("error parsing integer: %v", err)
@@ -21,15 +24,27 @@ func parseInteger(s string) (int, error) {
 	return val, nil
 }
 
+// parseFloat is designed to convert a string to a float64 data type.
+// The strconv.ParseFloat() function is used for this conversion.
+// If an error occurs during the conversion, the error is returned along with a float64 value of 0.
+// Otherwise, the converted float64 value and a nil error are returned.
 func parseFloat(s string) (float64, error) {
+	// Convert string to float64.
 	val, err := strconv.ParseFloat(s, 64)
+
 	if err != nil {
 		return 0, fmt.Errorf("error parsing float: %v", err)
 	}
+
 	return val, nil
 }
 
+// parseBool takes a string s as input and returns a boolean value and an error.
+// It uses the strconv.ParseBool function from the strconv package to parse the string.
+// If the parsing fails, it returns a boolean value of false and an error.
+// Otherwise, it returns the parsed boolean value and a nil error.
 func parseBool(s string) (bool, error) {
+	// ParseBool converts a string into a boolean value.
 	val, err := strconv.ParseBool(s)
 	if err != nil {
 		return false, fmt.Errorf("error parsing bool: %v", err)
@@ -37,10 +52,13 @@ func parseBool(s string) (bool, error) {
 	return val, nil
 }
 
+// parseString removes the leading and trailing spaces from the given string s and returns the resulting string.
 func parseString(s string) string {
+	// Remove leading and trailing spaces
 	return strings.TrimSpace(s)
 }
 
+// ReadSampleDatafromFile takes in a filename and returns a SampleData datatype and error
 func ReadSampleDataFromFile(filename string) ([]SampleData, error) {
 	var sampleData []SampleData
 
@@ -149,31 +167,36 @@ func ReadSampleDataFromFile(filename string) ([]SampleData, error) {
 	return sampleData, nil
 }
 
+// ProcessFile function reads a CSV file and extracts specific data from it.
+// It returns the extracted data as an OrderedPair and an error if there are any.
 func ProcessFile(filePath string) (OrderedPair, error) {
+	// Open file
 	file, err := os.Open(filePath)
 	if err != nil {
 		return OrderedPair{}, err
 	}
 	defer file.Close()
 
+	// Read file
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
 		return OrderedPair{}, err
 	}
 
+	// Filter records
 	var processed []string
 	for i, record := range records {
-		if i == 5 || i == 12 { // Keeping only rows 5 and 12
+		if i == 5 || i == 12 {
 			if len(record) > 1 {
-				processed = append(processed, record[1]) // Keeping only the second column
+				processed = append(processed, record[1])
 			}
 		}
 	}
 
+	// Process results
 	var result OrderedPair
 	if len(processed) >= 2 {
-		// Parse the string values into float64
 		maxTemp, err := strconv.ParseFloat(processed[0], 64)
 		if err != nil {
 			return OrderedPair{}, err
@@ -190,6 +213,10 @@ func ProcessFile(filePath string) (OrderedPair, error) {
 	return result, nil
 }
 
+// LoadWeatherData loads weather data from specific CSV files. It iterates through each file in the specified directory and checks if it is a file that should be processed.
+// If so, it removes the ".csv" extension from the file name and processes the file using the ProcessFile function.
+// The processed data is then stored in a map with the modified file name as the key.
+// The function returns the map and any error that occurred during the process.
 func LoadWeatherData(folder string) (map[string]OrderedPair, error) {
 	directory := folder
 
@@ -233,6 +260,11 @@ func LoadWeatherData(folder string) (map[string]OrderedPair, error) {
 }
 
 // InitializeQuadrants creates a 5x5 grid of Quadrants
+// initializes the quadrants based on the maximum and minimum longitude and latitude values.
+// It calculates the width and height of each quadrant.
+// Then, it creates a list of quadrants, with each quadrant's properties such as its coordinates, width, and temperature.
+// The code loads the weather data for each state and calculates the average temperature for each quadrant based on the state data.
+// Finally, it returns the initialized weather data.
 func InitializeQuadrants() Weather {
 	totalWidth := maxLon - minLon
 	totalHeight := maxLat - minLat
@@ -364,6 +396,9 @@ func InitializeQuadrants() Weather {
 	}
 }
 
+// ReadTrees reads data from a CSV file, where each row contains the longitude and latitude of a habitat for a tree.
+// It then stores the data as an array of OrderedPair objects, with each object representing a unique pair of coordinates.
+// The function returns the array of OrderedPair objects and an error, if any occurred during the process.
 func ReadTrees(filePath string) ([]OrderedPair, error) {
 	var habitats []OrderedPair
 
@@ -406,6 +441,8 @@ func ReadTrees(filePath string) ([]OrderedPair, error) {
 	return habitats, nil
 }
 
+// InitialiCountry  is responsible for setting up and initializing a Country object, representing a geographical region.
+// The country has certain attributes, including its width and height, as well as a collection of trees and flies.
 func InitializeCountry() Country {
 	var country Country
 	country.width = maxLat - minLat
@@ -435,9 +472,6 @@ func InitializeCountry() Country {
 			numberOfTree--
 		}
 	}
-
-	country.trees = trees
-	fmt.Println(len(country.trees))
 
 	// Initialize flies
 	flies, err := ReadSampleDataFromFile("Data/lydetext.txt")
@@ -595,11 +629,17 @@ func InitializeCountry() Country {
 	return country
 }
 
+// RandomInRange returns a random float64 in range [min, max).
+// uses the rand package to generate a random float64 within the specified range.
+// It seeds the random number generator with the current Unix time in nanoseconds to ensure that it generates a new random sequence every time it's called.
 func randomInRange(max, min float64) float64 {
-	rand.Seed(time.Now().UnixNano()) // Initialize the random number generator
+	rand.Seed(time.Now().UnixNano()) // Seed random number generator
 	return min + rand.Float64()*(max-min)
 }
 
+// Fahrenheit to Celsius takes a float64 value f as an argument.
+// The function calculates the equivalent temperature in Celsius and returns it.
 func FareinheitToCelsius(f float64) float64 {
+	// Convert to Celsius
 	return (f - 32) * 5 / 9
 }
