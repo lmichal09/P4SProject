@@ -6,10 +6,11 @@ import (
 	"image/color"
 )
 
-//AnimateSystem takes a slice of Country objects along with a canvas width
-//parameter and generates a slice of images corresponding to drawing each Country
-//on a canvasWidth x canvasWidth canvas
-
+// AnimateSystem takes a slice of Country objects along with a canvas width
+// parameter and generates a slice of images corresponding to drawing each Country
+// It then creates an empty slice called images to store the resulting animation frames.
+// The function iterates through the daily time points, and only appends a new frame to the images slice if the current index is divisible by the frequency.
+// Finally, the function returns the slice of images representing the animated system.
 func AnimateSystem(dailyTimePoints []Country, canvasWidth, canvasHeight int, frequency int) []image.Image {
 	images := make([]image.Image, 0)
 
@@ -18,11 +19,14 @@ func AnimateSystem(dailyTimePoints []Country, canvasWidth, canvasHeight int, fre
 			images = append(images, DrawToCanvas(dailyTimePoints[i], canvasWidth, canvasHeight))
 		}
 	}
-	// fmt.Println("how many images?", len(images))
 	return images
 }
 
 // GetFlyColor returns the color for a fly based on its stage
+// takes a Fly object as an argument and returns a color.Color object.
+// The color of the fly depends on its stage and whether it is alive or not.
+// The switch statement handles this by checking the stage of the fly and setting the color accordingly.
+// If the fly is dead, it returns black.
 func GetFlyColor(fly Fly) color.Color {
 	if !fly.isAlive {
 		return canvas.MakeColor(0, 0, 0) // Black for dead flies
@@ -48,6 +52,10 @@ func GetFlyColor(fly Fly) color.Color {
 
 // DrawToCanvas generates the image corresponding to a canvas after drawing a Quadrant
 // object's flies on a square canvas that is canvasWidth pixels x canvasWidth pixels
+// takes a Country, canvas width, and canvas height as input and returns an image.Image.
+// It creates a new canvas and sets a black background.
+// It then draws the flies and trees in the country.
+// The function returns the drawn image.
 func DrawToCanvas(country Country, canvasWidth, canvasHeight int) image.Image {
 	// set a new square canvas
 	c := canvas.CreateNewCanvas(canvasWidth, canvasHeight)
@@ -72,6 +80,7 @@ func DrawToCanvas(country Country, canvasWidth, canvasHeight int) image.Image {
 		c.Fill()
 	}
 
+	//draw trees
 	for _, tree := range country.trees {
 		c.SetFillColor(canvas.MakeColor(0, 175, 0))
 		cx := (tree.position.x / float64(country.width)) * float64(canvasHeight)
