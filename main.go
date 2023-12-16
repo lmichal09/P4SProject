@@ -5,16 +5,14 @@ import (
 	"gifhelper"
 )
 
-// BUG: everything in io.go is commented out
-
+// initializes a system, simulates migration, and generates an animated GIF to visualize the system.
 func main() {
 	fmt.Println("Lantern Flies simulation!")
-	// step 1: reading input from a single file.
+	// Reading input
 
 	fmt.Println("Success! Now we are ready to do something cool with our data.")
 
-	// outputFile := "LanternFly_demo/output.gif" // Define the output file path and name
-
+	// Initialize the system
 	initialCountry := InitializeCountry()
 	fmt.Println("Country initialized.")
 
@@ -30,9 +28,8 @@ func main() {
 	canvasHeight := 10000
 	imageFrequency := 30
 
-	// Call your AnimateSystem function to generate images
-	images := AnimateSystem(timePoints, int(canvasWidth), int(canvasHeight), imageFrequency) //error
-
+	// Animate the system
+	images := AnimateSystem(timePoints, int(canvasWidth), int(canvasHeight), imageFrequency)
 	fmt.Println("Images drawn!")
 
 	fmt.Println("Generating an animated GIF.")
